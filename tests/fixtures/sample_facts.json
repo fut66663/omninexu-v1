@@ -1,0 +1,278 @@
+{
+  "AAPL": [
+    {
+      "ticker": "AAPL",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-09-27",
+      "concept": "Revenue",
+      "value": 416161000000.0,
+      "unit": "USD",
+      "source_filing": "0000320193-25-000079"
+    },
+    {
+      "ticker": "AAPL",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-09-27",
+      "concept": "NetIncome",
+      "value": 112010000000.0,
+      "unit": "USD",
+      "source_filing": "0000320193-25-000079"
+    },
+    {
+      "ticker": "AAPL",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-09-27",
+      "concept": "EPSDiluted",
+      "value": 7.46,
+      "unit": "USD",
+      "source_filing": "0000320193-25-000079"
+    },
+    {
+      "ticker": "AAPL",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-09-27",
+      "concept": "GrossProfit",
+      "value": 195201000000.0,
+      "unit": "USD",
+      "source_filing": "0000320193-25-000079"
+    },
+    {
+      "ticker": "AAPL",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-09-27",
+      "concept": "OperatingIncome",
+      "value": 133050000000.0,
+      "unit": "USD",
+      "source_filing": "0000320193-25-000079"
+    },
+    {
+      "ticker": "AAPL",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-09-27",
+      "concept": "TotalAssets",
+      "value": 359241000000.0,
+      "unit": "USD",
+      "source_filing": "0000320193-25-000079"
+    },
+    {
+      "ticker": "AAPL",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-09-27",
+      "concept": "TotalLiabilities",
+      "value": 285508000000.0,
+      "unit": "USD",
+      "source_filing": "0000320193-25-000079"
+    },
+    {
+      "ticker": "AAPL",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-09-27",
+      "concept": "StockholdersEquity",
+      "value": 73733000000.0,
+      "unit": "USD",
+      "source_filing": "0000320193-25-000079"
+    },
+    {
+      "ticker": "AAPL",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-09-27",
+      "concept": "OperatingCashFlow",
+      "value": 111482000000.0,
+      "unit": "USD",
+      "source_filing": "0000320193-25-000079"
+    }
+  ],
+  "MSFT": [
+    {
+      "ticker": "MSFT",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-06-30",
+      "concept": "Revenue",
+      "value": 281724000000.0,
+      "unit": "USD",
+      "source_filing": "0000950170-25-100235"
+    },
+    {
+      "ticker": "MSFT",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-06-30",
+      "concept": "NetIncome",
+      "value": 101832000000.0,
+      "unit": "USD",
+      "source_filing": "0000950170-25-100235"
+    },
+    {
+      "ticker": "MSFT",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-06-30",
+      "concept": "EPSDiluted",
+      "value": 13.64,
+      "unit": "USD",
+      "source_filing": "0000950170-25-100235"
+    },
+    {
+      "ticker": "MSFT",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-06-30",
+      "concept": "GrossProfit",
+      "value": 193893000000.0,
+      "unit": "USD",
+      "source_filing": "0000950170-25-100235"
+    },
+    {
+      "ticker": "MSFT",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-06-30",
+      "concept": "OperatingIncome",
+      "value": 128528000000.0,
+      "unit": "USD",
+      "source_filing": "0000950170-25-100235"
+    },
+    {
+      "ticker": "MSFT",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-06-30",
+      "concept": "TotalAssets",
+      "value": 619003000000.0,
+      "unit": "USD",
+      "source_filing": "0000950170-25-100235"
+    },
+    {
+      "ticker": "MSFT",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-06-30",
+      "concept": "TotalLiabilities",
+      "value": 275524000000.0,
+      "unit": "USD",
+      "source_filing": "0000950170-25-100235"
+    },
+    {
+      "ticker": "MSFT",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-06-30",
+      "concept": "StockholdersEquity",
+      "value": 343479000000.0,
+      "unit": "USD",
+      "source_filing": "0000950170-25-100235"
+    },
+    {
+      "ticker": "MSFT",
+      "fiscal_year": 2025,
+      "fiscal_period": "FY",
+      "report_date": "2025-06-30",
+      "concept": "OperatingCashFlow",
+      "value": 136162000000.0,
+      "unit": "USD",
+      "source_filing": "0000950170-25-100235"
+    }
+  ],
+  "NVDA": [
+    {
+      "ticker": "NVDA",
+      "fiscal_year": 2026,
+      "fiscal_period": "FY",
+      "report_date": "2026-01-25",
+      "concept": "Revenue",
+      "value": 215938000000.0,
+      "unit": "USD",
+      "source_filing": "0001045810-26-000021"
+    },
+    {
+      "ticker": "NVDA",
+      "fiscal_year": 2026,
+      "fiscal_period": "FY",
+      "report_date": "2026-01-25",
+      "concept": "NetIncome",
+      "value": 120067000000.0,
+      "unit": "USD",
+      "source_filing": "0001045810-26-000021"
+    },
+    {
+      "ticker": "NVDA",
+      "fiscal_year": 2026,
+      "fiscal_period": "FY",
+      "report_date": "2026-01-25",
+      "concept": "EPSDiluted",
+      "value": 4.9,
+      "unit": "USD",
+      "source_filing": "0001045810-26-000021"
+    },
+    {
+      "ticker": "NVDA",
+      "fiscal_year": 2026,
+      "fiscal_period": "FY",
+      "report_date": "2026-01-25",
+      "concept": "GrossProfit",
+      "value": 153463000000.0,
+      "unit": "USD",
+      "source_filing": "0001045810-26-000021"
+    },
+    {
+      "ticker": "NVDA",
+      "fiscal_year": 2026,
+      "fiscal_period": "FY",
+      "report_date": "2026-01-25",
+      "concept": "OperatingIncome",
+      "value": 130387000000.0,
+      "unit": "USD",
+      "source_filing": "0001045810-26-000021"
+    },
+    {
+      "ticker": "NVDA",
+      "fiscal_year": 2026,
+      "fiscal_period": "FY",
+      "report_date": "2026-01-25",
+      "concept": "TotalAssets",
+      "value": 206803000000.0,
+      "unit": "USD",
+      "source_filing": "0001045810-26-000021"
+    },
+    {
+      "ticker": "NVDA",
+      "fiscal_year": 2026,
+      "fiscal_period": "FY",
+      "report_date": "2026-01-25",
+      "concept": "TotalLiabilities",
+      "value": 49510000000.0,
+      "unit": "USD",
+      "source_filing": "0001045810-26-000021"
+    },
+    {
+      "ticker": "NVDA",
+      "fiscal_year": 2026,
+      "fiscal_period": "FY",
+      "report_date": "2026-01-25",
+      "concept": "StockholdersEquity",
+      "value": 157293000000.0,
+      "unit": "USD",
+      "source_filing": "0001045810-26-000021"
+    },
+    {
+      "ticker": "NVDA",
+      "fiscal_year": 2026,
+      "fiscal_period": "FY",
+      "report_date": "2026-01-25",
+      "concept": "OperatingCashFlow",
+      "value": 102718000000.0,
+      "unit": "USD",
+      "source_filing": "0001045810-26-000021"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+# ── Dev-only ──
+tests/
+docs/
+.github/
+.docker/
+node_modules/
+.claude/
+
+# ── VCS ──
+.git/
+.gitignore
+.gitattributes
+
+# ── Python artifacts ──
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# ── Env (injected at runtime) ──
+.env
+.env.*
+!.env.example
+
+# ── Docs & config ──
+Makefile
+README.md
+CLAUDE.md
+*.md
+LICENSE
+.DS_Store
+Thumbs.db
+
+# ── IDE ──
+.vscode/
+.idea/

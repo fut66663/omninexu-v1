@@ -1,0 +1,80 @@
+# OmniNexu MVP - Production Docker Compose
+#
+# Usage:
+#   docker compose -f docker-compose.prod.yml up -d --build
+#   docker compose -f docker-compose.prod.yml ps
+#   docker compose -f docker-compose.prod.yml logs -f app
+
+services:
+  # ── FastAPI Application ──
+  app:
+    build: .
+    container_name: omninexu-app
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"          # only localhost, nginx proxies
+    env_file:
+      - .env
+    volumes:
+      - /data/omninexu-data:/data/omninexu-data  # data warehouse
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - omninexu-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ── PostgreSQL 16 ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: omninexu-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: omninexu
+      POSTGRES_PASSWORD: omninexu
+      POSTGRES_DB: omninexu
+    volumes:
+      - /data/pgdata:/var/lib/postgresql/data  # data disk
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U omninexu -d omninexu"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - omninexu-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ── Redis 7 ──
+  redis:
+    image: redis:7-alpine
+    container_name: omninexu-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes    # AOF persistence
+    volumes:
+      - /data/redisdata:/data                  # data disk
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - omninexu-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  omninexu-net:
+    driver: bridge
