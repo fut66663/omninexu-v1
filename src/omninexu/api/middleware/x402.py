@@ -183,10 +183,11 @@ def _build_routes() -> dict[str, RouteConfig]:
                 "Company Context Quick — fundamentals, confidence, "
                 "company info & peer comparison for S&P 500 companies. "
                 "Standard tier (insider + institutional) and Pro tier "
-                "(longitudinal CAGR) coming soon."
+                "(longitudinal CAGR) coming soon. "
+                "Open source: https://github.com/fut66663/omninexu-v1"
             ),
             service_name="OmniNexu",
-            tags=["finance", "sp500", "fundamentals", "sec-edgar"],
+            tags=["finance", "sp500", "fundamentals", "sec-edgar", "open-source"],
             extensions=_build_bazaar_extension(),
         )
 
