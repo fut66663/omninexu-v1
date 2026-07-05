@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from omninexu.api.schemas import CompanyContextResponse
 from omninexu.application.company_context import CompanyContextService
+from omninexu.application.pulse import build_pulse
 from omninexu.infrastructure.db import get_db
 from omninexu.infrastructure.product_store import save_product
 from omninexu.observability import get_logger
@@ -29,3 +30,19 @@ async def get_company_context(
         save_product, "context", ticker, context
     )
     return context
+
+
+@router.get("/company/pulse")
+async def get_company_pulse(
+    background_tasks: BackgroundTasks,
+    ticker: str = Query(..., description="Stock ticker symbol"),
+) -> dict[str, Any]:
+    """Get investment signals (insider, institutional, revenue trend) for a ticker.
+
+    Protected by x402 — $0.02 per request.
+    """
+    pulse = build_pulse(ticker)
+    background_tasks.add_task(
+        save_product, "pulse", ticker, pulse
+    )
+    return pulse

@@ -79,7 +79,7 @@ def test_company_context_response_accepts_none():
     resp = CompanyContextResponse(
         ticker="AAPL", cik="0000320193", name="Apple Inc.",
         as_of_date=None,
-        fundamentals={"revenue": FundamentalMetric(value=100.0, unit="USD", fiscal_year=2025)},
+        fundamentals={"revenue": FundamentalMetric(value=100.0, unit="USD", fiscal_year=2025, source="edgar")},
         longitudinal={}, peer_comparison=None,
         sources=[Source(type="10-K", url="https://sec.gov/...")],
         confidence="low",

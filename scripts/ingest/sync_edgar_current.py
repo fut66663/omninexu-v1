@@ -34,7 +34,8 @@ logger = get_logger(__name__)
 
 CHECKPOINT_DIR = data_paths.checkpoints_dir
 
-PHASE = "edgar_current"
+PHASE = "edgar_current"  # default, overridden by --form
+SUPPORTED_FORMS = ("10-K", "10-Q")
 
 DELAY_SECONDS = 0.25  # 4 req/s — well under SEC 10 req/s limit
 BATCH_LOG_EVERY = 20
@@ -67,32 +68,46 @@ def _get_all_tickers() -> list[tuple[str, str, str]]:
         db.close()
 
 
-def sync_edgar_current(dry_run: bool = False, retry_failed: bool = False) -> dict[str, int]:
-    """Download latest 10-K from SEC EDGAR for all companies."""
+def sync_edgar_current(
+    dry_run: bool = False,
+    retry_failed: bool = False,
+    form: str = "10-K",
+    ticker_filter: list[str] | None = None,
+) -> dict[str, int]:
+    """Download latest SEC filing (10-K or 10-Q) for all companies.
+
+    Args:
+        ticker_filter: If provided, only sync these tickers.
+    """
+    form_phase = f"edgar_{form.replace('-', '').lower()}"
     companies = _get_all_tickers()
+    if ticker_filter:
+        ticker_set = {t.upper() for t in ticker_filter}
+        companies = [c for c in companies if c[0] in ticker_set]
     tickers = [c[0] for c in companies]
     n_total = len(tickers)
 
     if dry_run:
-        est_seconds = n_total * DELAY_SECONDS + n_total * 8  # sleep + avg parse
-        logger.info(f"Dry run: {n_total} companies")
+        est_seconds = n_total * DELAY_SECONDS + n_total * 8
+        logger.info(f"Dry run ({form}): {n_total} companies")
         logger.info(f"  Estimated time: {est_seconds / 60:.0f} min (~{est_seconds / 3600:.1f} hrs)")
         logger.info(f"  Rate: {1 / DELAY_SECONDS:.0f} req/s")
         return {}
 
-    cpm = CheckpointManager(CHECKPOINT_DIR / "checkpoint_edgar_current.json")
+    cp_name = f"checkpoint_edgar_{form.replace('-', '').lower()}.json"
+    cpm = CheckpointManager(CHECKPOINT_DIR / cp_name)
 
     if retry_failed:
-        pending = [e["ticker"] for e in cpm.get_failed(PHASE)]
+        pending = [e["ticker"] for e in cpm.get_failed(form_phase)]
         logger.info(f"Retrying {len(pending)} previously failed tickers")
     else:
-        pending = cpm.get_pending(tickers, PHASE)
+        pending = cpm.get_pending(tickers, form_phase)
 
     if not pending:
         logger.info(f"All {n_total} companies already synced")
         return {}
 
-    logger.info(f"Syncing {len(pending)}/{n_total} companies from SEC EDGAR")
+    logger.info(f"Syncing {len(pending)}/{n_total} companies ({form}) from SEC EDGAR")
     logger.info(f"  Rate: {1 / DELAY_SECONDS:.0f} req/s, ETA: ~{len(pending) * (DELAY_SECONDS + 8) / 60:.0f} min")
 
     guard = PipelineGuard()
@@ -117,7 +132,7 @@ def sync_edgar_current(dry_run: bool = False, retry_failed: bool = False) -> dic
 
         try:
             time.sleep(DELAY_SECONDS)
-            facts = client.get_financial_facts(edgar_ticker, num_filings=1)
+            facts = client.get_financial_facts(edgar_ticker, num_filings=1, form=form)
             hook.record("download", ticker, ok=True,
                         bytes_written=sum(f.stat().st_size for f in
                             (data_paths.raw_sec_10k / ticker).rglob("filing.html"))
@@ -132,7 +147,7 @@ def sync_edgar_current(dry_run: bool = False, retry_failed: bool = False) -> dic
                 repo.save_facts(facts)  # upsert — EDGAR overwrites same keys
                 db.commit()
                 results[ticker] = len(facts)
-                cpm.mark_completed(ticker, PHASE, count=len(facts), source="edgar")
+                cpm.mark_completed(ticker, form_phase, count=len(facts), source="edgar")
                 hook.record("save", ticker, ok=True, rows_inserted=len(facts))
 
                 # Validate the cached filing is non-empty on disk.
@@ -143,7 +158,7 @@ def sync_edgar_current(dry_run: bool = False, retry_failed: bool = False) -> dic
                     logger.warning("  %s: %d empty filing.html in cache", label, len(_empties))
             else:
                 results[ticker] = 0
-                cpm.mark_completed(ticker, PHASE, count=0, source="edgar")
+                cpm.mark_completed(ticker, form_phase, count=0, source="edgar")
                 hook.record("save", ticker, ok=True, rows_inserted=0)
                 logger.warning(f"  {label}: 0 facts parsed")
 
@@ -151,7 +166,7 @@ def sync_edgar_current(dry_run: bool = False, retry_failed: bool = False) -> dic
             db.rollback()
             msg = str(exc)[:120]
             logger.error(f"  {label}: FAILED — {msg}")
-            cpm.mark_failed(ticker, PHASE, msg)
+            cpm.mark_failed(ticker, form_phase, msg)
             results[ticker] = -1
             hook.record("download", ticker, ok=False, error=msg)
 
@@ -190,6 +205,11 @@ def main() -> None:
                         help="Show estimate without downloading")
     parser.add_argument("--retry-failed", action="store_true",
                         help="Re-process previously failed tickers")
+    parser.add_argument("--form", type=str, default="10-K",
+                        choices=["10-K", "10-Q"],
+                        help="SEC form type (default: 10-K)")
+    parser.add_argument("--tickers", type=str, default=None,
+                        help="Comma-separated tickers to sync (default: all)")
     args = parser.parse_args()
 
     # Pre-flight disk space check.
@@ -201,7 +221,16 @@ def main() -> None:
             db.close()
         DiskValidator.ensure_download_space(n, data_paths.raw_sec_10k)
 
-    results = sync_edgar_current(dry_run=args.dry_run, retry_failed=args.retry_failed)
+    ticker_filter = None
+    if args.tickers:
+        ticker_filter = [t.strip().upper() for t in args.tickers.split(",") if t.strip()]
+
+    results = sync_edgar_current(
+        dry_run=args.dry_run,
+        retry_failed=args.retry_failed,
+        form=args.form,
+        ticker_filter=ticker_filter,
+    )
 
     if args.dry_run:
         return

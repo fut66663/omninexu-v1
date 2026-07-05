@@ -12,6 +12,7 @@ class FundamentalMetric(BaseModel):
     value: float
     unit: str
     fiscal_year: int
+    source: str  # "simfin" | "edgar"
 
 
 class PeerComparison(BaseModel):
@@ -52,6 +53,7 @@ class InstitutionalSummary(BaseModel):
     model_config = ConfigDict(extra="forbid")
     top_holders: list[InstitutionalHolder]
     as_of_date: date | None = None
+    source: str = "SEC 13F"
 
 
 class InsiderTransaction(BaseModel):
@@ -73,6 +75,7 @@ class InsiderSummary(BaseModel):
     recent_transactions: list[InsiderTransaction]
     net_shares_90d: float
     transaction_count_90d: int
+    source: str = "SEC Form-4"
 
 
 class CompanyContextResponse(BaseModel):

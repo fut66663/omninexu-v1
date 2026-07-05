@@ -119,7 +119,7 @@ class TestNoEdgarLeak:
         app_dir = Path("src/omninexu/application")
         violations: list[str] = []
         for py_file in app_dir.glob("*.py"):
-            tree = ast.parse(py_file.read_text())
+            tree = ast.parse(py_file.read_text(encoding="utf-8"))
             for node in ast.walk(tree):
                 if (
                     isinstance(node, ast.ImportFrom)

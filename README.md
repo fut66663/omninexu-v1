@@ -16,12 +16,30 @@ Built-in **[x402](https://docs.cdp.coinbase.com/x402/welcome)** payment support 
 
 | Dimension | Coverage | Source |
 |-----------|:---:|--------|
-| Fundamentals (9 standardized metrics) | 440 tickers (88%) | SimFin + SEC EDGAR XBRL |
-| Cross-source validation (SEC vs SimFin) | Within coverage | Alert on >2% discrepancy |
-| Peer comparison (GICS industry) | 500 companies | SEC SIC → GICS mapping |
-| Insider transactions (Form 4) | 18 tickers | SEC EDGAR |
-| Institutional holdings (13F) | 20 tickers | SEC EDGAR |
-| Longitudinal trends (CAGR) | Roadmap | — |
+| Fundamentals (9 standardized metrics) | 500 companies / 18,676 facts | SimFin + SEC EDGAR |
+| Quarterly financials (10-Q) | 115 tickers (Q1:85 / Q2:21 / Q3:14) | SEC EDGAR |
+| Insider transactions (Form 4) | 20 tickers / 380 transactions | SEC EDGAR |
+| Institutional holdings (13F) | 20 tickers / 159 records | SEC EDGAR |
+| Macro-economic indicators | 5 series (Fed rate, CPI, GDP, unemployment, 10Y) | FRED |
+| Peer comparison (GICS industry) | 500 companies | SIC → GICS mapping |
+| Investment signals (pulse) | 7 signal types across 114 tickers | Multi-source |
+| Analytical database | 24,360 rows / 5 tables / pivot view | DuckDB |
+
+## API Endpoints
+
+| Method | Path | Price | Description |
+|--------|------|:---:|-------------|
+| GET | `/v1/health` | Free | Health check (DB + Redis + DuckDB + pipelines) |
+| GET | `/v1/company/context?ticker={t}` | $0.02 | Company fundamentals + peers + institutional + insider |
+| GET | `/v1/company/pulse?ticker={t}` | $0.02 | 7 investment signals (insider, institutional, revenue, macro, sector, peer) |
+| GET | `/v1/company/filings?ticker={t}` | $0.01 | SEC filing metadata |
+| GET | `/v1/company/insider?ticker={t}` | $0.03 | Insider trading details |
+| GET | `/v1/company/institutional?ticker={t}` | $0.03 | 13F institutional holdings |
+| GET | `/v1/company/peer-ranking?ticker={t}` | $0.01 | Industry peer ranking |
+| GET | `/v1/company/longitudinal?ticker={t}` | $0.05 | Multi-year trend analysis |
+| GET | `/v1/company/smart-money?ticker={t}` | $0.05 | Institutional + insider aggregated signal |
+
+> All data endpoints use x402 per-query pricing on Base mainnet (USDC). No API keys. No signup.
 
 ## Tech Stack
 
@@ -30,11 +48,14 @@ Built-in **[x402](https://docs.cdp.coinbase.com/x402/welcome)** payment support 
 | Language | Python 3.12+ |
 | Web Framework | FastAPI + Uvicorn |
 | Database | PostgreSQL 16 + SQLAlchemy 2.0 |
+| Analytical DB | DuckDB (in-process OLAP) |
 | Cache | Redis 7 |
 | Payment | x402 protocol (Base mainnet, USDC) |
-| Data Ingestion | edgartools + SimFin API |
+| Data Ingestion | edgartools + SimFin + FRED API |
+| Pipeline Scheduler | Cron + custom scheduler (6 commands) |
 | Package Manager | uv |
-| Deployment | Docker + Docker Compose + Nginx |
+| Deployment | Docker + Docker Compose + Nginx + GitHub Actions CI |
+| Quality | ruff + mypy + pytest (725 tests) |
 
 ## Project Structure
 
@@ -44,27 +65,31 @@ src/omninexu/
 │   ├── main.py            Entry point + middleware registration
 │   ├── middleware/         x402 payment + request logging
 │   ├── routes/             Endpoints (health, company)
-│   └── schemas/            Pydantic response models
+│   ├── schemas/            Pydantic response models
+│   └── endpoints/          Per-endpoint x402 route registration (8 endpoints)
 ├── application/            Business use cases
+│   ├── company_context.py  Company fundamentals + peer comparison
+│   └── pulse.py            7 investment signal generators
 ├── domain/                 Domain models
 ├── infrastructure/         External dependencies
-│   ├── clients/            SEC EDGAR, SimFin, CDP auth
+│   ├── clients/            SEC EDGAR, SimFin, FRED, CDP auth
 │   ├── repositories/       SQLAlchemy query wrappers
+│   ├── storage/            Disk validation + product persistence
 │   ├── cache/              Redis cache layer
 │   ├── db.py               Session factory
 │   └── models.py           ORM models
 ├── config/                 Configuration (pydantic-settings)
-├── jobs/                   Data seeding
 └── observability/          Structured logging + error handling
 
 scripts/
-├── ingest/                 Data collection pipelines (SEC, SimFin, GICS)
+├── ingest/                 Data collection (SEC 10-K/10-Q, SimFin, FRED, GICS)
+├── ops/                    Pipeline scheduler (6 commands) + DuckDB export
 ├── verify/                 Data quality verification
-├── ops/                    Operations (backup, log rotation)
 └── x402/buyer.py           x402 buyer payment script
 
-tests/                      Pytest suite
-docs/                       Documentation
+tests/                      725 tests (unit + integration)
+docs/                       Architecture + data reports
+deploy/                     Nginx config + crontab
 ```
 
 ## Quick Start

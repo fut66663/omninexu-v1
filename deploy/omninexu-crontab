@@ -1,0 +1,31 @@
+# OmniNexu Pipeline Cron Jobs
+# VPS: api.omninexu.com (Ubuntu, Docker)
+# Install: crontab /path/to/omninexu-crontab
+# Verify:  crontab -l
+#
+# Schedule design:
+#   sync_edgar     → Daily 06:00 UTC (after US market close, before Asia open)
+#   product_store  → Daily 07:00 UTC (after SEC sync completes, 1h buffer)
+#   import_simfin  → Weekly Monday 03:00 UTC (SimFin bulk data updates weekly)
+#
+# All times in UTC.  The VPS timezone should be UTC.
+
+OMNINEXU_ROOT=/data/omninexu
+DOCKER_EXEC=docker exec omninexu-app
+
+# ── Daily: FRED macro sync (05:30 UTC) ──
+# Downloads 5 core macro-economic series.  ~5s, lightweight.
+30 5 * * * cd $OMNINEXU_ROOT && $DOCKER_EXEC uv run python scripts/ops/scheduler.py sync_fred >> /var/log/omninexu-cron.log 2>&1
+
+# ── Daily: SEC EDGAR sync (06:00 UTC) ──
+# Downloads latest 10-K filings from SEC for all S&P 500 companies.
+# ~2 hrs for 500 companies at 4 req/s.
+0 6 * * * cd $OMNINEXU_ROOT && $DOCKER_EXEC uv run python scripts/ops/scheduler.py sync_edgar >> /var/log/omninexu-cron.log 2>&1
+
+# ── Daily: Product store generation (07:00 UTC) ──
+# Generates context snapshots for all tickers in the universe.
+0 7 * * * cd $OMNINEXU_ROOT && $DOCKER_EXEC uv run python scripts/ops/scheduler.py product_store >> /var/log/omninexu-cron.log 2>&1
+
+# ── Weekly: SimFin batch import (Monday 03:00 UTC) ──
+# Imports latest SimFin financial facts CSV data.
+0 3 * * 1 cd $OMNINEXU_ROOT && $DOCKER_EXEC uv run python scripts/ops/scheduler.py import_simfin --day 1 >> /var/log/omninexu-cron.log 2>&1

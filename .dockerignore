@@ -5,6 +5,8 @@ docs/
 .docker/
 node_modules/
 .claude/
+htmlcov/
+deploy/
 
 # ── VCS ──
 .git/

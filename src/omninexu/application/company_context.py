@@ -165,6 +165,7 @@ class CompanyContextService:
                 "value": fact.value,
                 "unit": fact.unit,
                 "fiscal_year": fact.fiscal_year,
+                "source": fact.source,
             }
         return fundamentals
 
