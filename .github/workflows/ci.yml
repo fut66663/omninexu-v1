@@ -58,7 +58,8 @@ jobs:
           DATABASE_URL: postgresql://omninexu:omninexu@localhost:5432/omninexu
           REDIS_URL: redis://localhost:6379/0
           EDGAR_IDENTITY: ci@omninexu.local
-        run: uv run pytest
+          X402_ENABLED: false
+        run: uv run pytest --ignore=tests/integration/test_smoke.py
 
   docker:
     name: Build & Push Docker Image

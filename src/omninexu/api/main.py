@@ -1,5 +1,7 @@
 """FastAPI application."""
 
+import os as _os
+
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -43,8 +45,6 @@ app.include_router(longitudinal_router, prefix="/v1", tags=["longitudinal"])
 app.middleware("http")(log_request)
 
 # ── Static files (icon, etc.) ──
-import os as _os
-
 _static_dir = _os.path.join(_os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=_static_dir), name="static")
 
