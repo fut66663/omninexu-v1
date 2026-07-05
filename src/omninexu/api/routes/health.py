@@ -92,15 +92,19 @@ async def health_check(db: Session = Depends(get_db)) -> dict[str, Any]:
 
     try:
         import duckdb
-        con = duckdb.connect(str(data_paths.duckdb_path))
-        con.execute("SELECT 1")
-        row = con.execute(
-            "SELECT count(*) FROM information_schema.tables "
-            "WHERE table_schema NOT IN ('pg_catalog','information_schema')"
-        ).fetchone()
-        tables = row[0] if row else 0
-        result["duckdb_tables"] = tables
-        con.close()
+        db_path = str(data_paths.duckdb_path)
+        if not __import__("os").path.exists(db_path):
+            result["duckdb"] = "unavailable"
+        else:
+            con = duckdb.connect(db_path)
+            con.execute("SELECT 1")
+            row = con.execute(
+                "SELECT count(*) FROM information_schema.tables "
+                "WHERE table_schema NOT IN ('pg_catalog','information_schema')"
+            ).fetchone()
+            tables = row[0] if row else 0
+            result["duckdb_tables"] = tables
+            con.close()
     except Exception as exc:
         logger.warning(f"Health DuckDB failure: {exc}")
         result["duckdb"] = "error"
