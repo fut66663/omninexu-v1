@@ -64,6 +64,27 @@ async def omninexu_exception_handler(_: object, exc: OmniNexuError) -> JSONRespo
     )
 
 
+@app.on_event("startup")
+async def _clear_stale_cache() -> None:
+    """Clear old-version cache keys on startup to prevent schema mismatch."""
+    try:
+        from omninexu.application.company_context import CACHE_VERSION
+        from omninexu.infrastructure.cache import cache as _cache
+
+        old_patterns = []
+        v = int(CACHE_VERSION.lstrip("v"))
+        for old_v in range(1, v):
+            old_patterns.append(f"company_context:v{old_v}:*")
+
+        for pattern in old_patterns:
+            keys = _cache.client.keys(pattern)
+            if keys:
+                _cache.client.delete(*keys)
+                logger.info(f"Cleared {len(keys)} stale cache keys: {pattern}")
+    except Exception:
+        pass  # cache clear is best-effort, don't block startup
+
+
 @app.get("/")
 async def root() -> dict[str, str]:
     return {"name": "OmniNexu", "version": "0.1.0"}

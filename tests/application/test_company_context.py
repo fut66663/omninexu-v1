@@ -367,8 +367,9 @@ class TestCompanyContextEdgeCases:
         _seed_company_and_facts(db_session)
         service = _make_service(db_session, fake_cache)
 
+        from omninexu.application.company_context import CACHE_VERSION
         context_first = service.build_context("AAPL")
-        fake_cache.set_json("company_context:v2:AAPL", {"ticker": "CACHED"})
+        fake_cache.set_json(f"company_context:{CACHE_VERSION}:AAPL", {"ticker": "CACHED"})
 
         context_second = service.build_context("AAPL")
         assert context_second["ticker"] == "CACHED"

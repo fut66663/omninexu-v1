@@ -29,6 +29,7 @@ from omninexu.observability import (
 logger = get_logger(__name__)
 
 CACHE_TTL_SECONDS = 24 * 3600
+CACHE_VERSION = "v3"  # bump when response schema changes (P1.5: +source fields)
 # Maximum fiscal years to use for longitudinal calculations.
 # SimFin provides FY2020+ (6-7 years); EDGAR supplements as available.
 MAX_LONGITUDINAL_PERIODS = 10
@@ -70,7 +71,7 @@ class CompanyContextService:
     ) -> dict[str, Any]:
         """Build full company context."""
         ticker_upper = ticker.upper()
-        cache_key = f"company_context:v2:{ticker_upper}"
+        cache_key = f"company_context:{CACHE_VERSION}:{ticker_upper}"
 
         cached = self.cache.get_json(cache_key)
         if cached is not None:
@@ -262,6 +263,6 @@ class CompanyContextService:
 
     def invalidate_cache(self, ticker: str) -> None:
         """Remove cached context for a ticker."""
-        cache_key = f"company_context:v2:{ticker.upper()}"
+        cache_key = f"company_context:{CACHE_VERSION}:{ticker.upper()}"
         self.cache.delete(cache_key)
         logger.info(f"Invalidated cache for {ticker.upper()}")
