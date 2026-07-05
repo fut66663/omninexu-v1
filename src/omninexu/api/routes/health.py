@@ -3,6 +3,7 @@
 import json
 import shutil
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import text
@@ -18,10 +19,10 @@ logger = get_logger(__name__)
 
 # ── helpers ──────────────────────────────────────────────────────
 
-def _read_pipeline_states() -> dict[str, dict]:
+def _read_pipeline_states() -> dict[str, dict[str, Any]]:
     """Read all pipeline state files, return {pipeline_name: {last_run, status}}."""
     state_dir = data_paths.state_dir
-    pipelines: dict[str, dict] = {}
+    pipelines: dict[str, dict[str, Any]] = {}
     if state_dir.is_dir():
         for f in sorted(state_dir.iterdir()):
             if f.suffix == ".json" and f.name.startswith("last_"):
@@ -65,9 +66,9 @@ def _count_api_calls_today() -> int:
 # ── endpoint ─────────────────────────────────────────────────────
 
 @router.get("/health")
-async def health_check(db: Session = Depends(get_db)) -> dict:
+async def health_check(db: Session = Depends(get_db)) -> dict[str, Any]:
     """Health check — infrastructure, pipeline, and data status."""
-    result: dict = {
+    result: dict[str, Any] = {
         "status": "ok",
         "database": "ok",
         "cache": "ok",
@@ -93,10 +94,11 @@ async def health_check(db: Session = Depends(get_db)) -> dict:
         import duckdb
         con = duckdb.connect(str(data_paths.duckdb_path))
         con.execute("SELECT 1")
-        tables = con.execute(
+        row = con.execute(
             "SELECT count(*) FROM information_schema.tables "
             "WHERE table_schema NOT IN ('pg_catalog','information_schema')"
-        ).fetchone()[0]
+        ).fetchone()
+        tables = row[0] if row else 0
         result["duckdb_tables"] = tables
         con.close()
     except Exception as exc:

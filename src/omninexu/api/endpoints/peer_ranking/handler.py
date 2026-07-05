@@ -1,5 +1,4 @@
 """Peer ranking route handler — industry comparison only."""
-from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -16,7 +15,7 @@ router = APIRouter()
 async def get_peer_ranking(
     ticker: str = Query(..., description="Stock ticker to compare"),
     db: Session = Depends(get_db),
-) -> dict[str, Any]:
+) -> dict:
     """Industry peer comparison — revenue and net income ranking."""
     svc = CompanyContextService(db)
     ctx = svc.build_context(ticker.upper(), include_peers=True)

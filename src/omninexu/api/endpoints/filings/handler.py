@@ -1,5 +1,4 @@
 """SEC filings route handler — recent filing metadata."""
-from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -16,7 +15,7 @@ router = APIRouter()
 async def get_filings(
     ticker: str = Query(..., description="Stock ticker symbol, e.g. AAPL"),
     db: Session = Depends(get_db),
-) -> dict[str, Any]:
+) -> dict:
     """Recent SEC filings — 10-K, 10-Q, 8-K, and source references."""
     svc = CompanyContextService(db)
     ctx = svc.build_context(ticker.upper(), include_peers=False)

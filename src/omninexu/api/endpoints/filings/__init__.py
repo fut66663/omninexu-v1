@@ -1,3 +1,4 @@
+
 """SEC Filings endpoint — Quick tier, $0.01."""
 from x402.http.types import RouteConfig
 

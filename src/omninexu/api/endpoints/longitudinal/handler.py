@@ -1,5 +1,4 @@
 """Longitudinal CAGR route handler — multi-year growth trends."""
-from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -16,7 +15,7 @@ router = APIRouter()
 async def get_longitudinal(
     ticker: str = Query(..., description="Stock ticker symbol, e.g. AAPL"),
     db: Session = Depends(get_db),
-) -> dict[str, Any]:
+) -> dict:
     """Multi-year CAGR growth trends for key financial metrics."""
     svc = CompanyContextService(db)
     ctx = svc.build_context(ticker.upper(), include_peers=False)

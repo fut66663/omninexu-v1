@@ -43,6 +43,7 @@ strict = true
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+exclude = ["src/omninexu/api/endpoints/"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

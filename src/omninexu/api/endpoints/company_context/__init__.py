@@ -1,3 +1,4 @@
+
 """Company Context endpoint — Quick tier, $0.02."""
 from x402.http.types import RouteConfig
 

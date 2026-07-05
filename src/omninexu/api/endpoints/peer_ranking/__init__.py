@@ -1,3 +1,4 @@
+
 """Peer Ranking endpoint — Quick tier, $0.01.
 
 Industry peer comparison and ranking. Unique differentiator.

@@ -1,3 +1,4 @@
+
 """Institutional holdings route handler."""
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session

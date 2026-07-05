@@ -1,3 +1,4 @@
+
 """Insider trading route handler."""
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session

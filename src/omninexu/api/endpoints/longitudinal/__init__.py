@@ -1,3 +1,4 @@
+
 """Longitudinal CAGR endpoint — Pro tier, $0.05."""
 from x402.http.types import RouteConfig
 

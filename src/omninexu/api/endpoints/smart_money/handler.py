@@ -1,3 +1,4 @@
+
 """Smart Money bundle — insider + institutional in one call."""
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session

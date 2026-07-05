@@ -1,3 +1,4 @@
+
 """Insider Trading endpoint — Standard tier, $0.03."""
 from x402.http.types import RouteConfig
 
