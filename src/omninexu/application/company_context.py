@@ -29,7 +29,7 @@ from omninexu.observability import (
 logger = get_logger(__name__)
 
 CACHE_TTL_SECONDS = 24 * 3600
-CACHE_VERSION = "v3"  # bump when response schema changes (P1.5: +source fields)
+CACHE_VERSION = "v4"  # bump: +10-Q/8-K sources, +3 longitudinal concepts, +peer industry
 # Maximum fiscal years to use for longitudinal calculations.
 # SimFin provides FY2020+ (6-7 years); EDGAR supplements as available.
 MAX_LONGITUDINAL_PERIODS = 10
