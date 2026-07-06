@@ -1,6 +1,7 @@
 """Dashboard — server-rendered HTML stats page."""
 
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
@@ -84,8 +85,8 @@ async def dashboard(request: Request) -> str:
     paths: dict[str, int] = {}
     times: list[float] = []
     paid = 0
-    payments: list[dict] = []
-    recent: list[dict] = []
+    payments: list[dict[str, Any]] = []
+    recent: list[dict[str, Any]] = []
 
     for r in rows:
         s = str(r.get("status", 0))

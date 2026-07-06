@@ -40,7 +40,7 @@ def _classify(ua: str) -> str:
     return "other"
 
 
-def _decode_payment(header: str) -> dict | None:
+def _decode_payment(header: str) -> dict[str, str] | None:
     """Decode base64 PAYMENT-RESPONSE → {payer, tx, network}."""
     try:
         payload = json.loads(base64.b64decode(header + "=="))
