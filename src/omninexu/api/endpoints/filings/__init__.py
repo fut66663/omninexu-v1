@@ -1,5 +1,5 @@
 
-"""SEC Filings endpoint — $0.002."""
+"""SEC Filings endpoint — $0.01."""
 from x402.http.types import RouteConfig
 
 from omninexu.api.middleware.x402.discovery_config import ICON_URL, SERVICE_NAME, get_tags
@@ -16,7 +16,7 @@ def register(pay_to: str, network: str, free_routes: set[str]) -> dict | None:
         return None
     return {
         route_key: RouteConfig(
-            accepts=[make_payment_option(pay_to, network, "$0.002")],
+            accepts=[make_payment_option(pay_to, network, "$0.01")],
             resource=ENDPOINT_META["url"],
             mime_type="application/json",
             description=ENDPOINT_META["description"],
