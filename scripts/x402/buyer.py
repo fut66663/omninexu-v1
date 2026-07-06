@@ -49,12 +49,11 @@ def show_balance() -> int:
 # ── Main ──────────────────────────────────────────────
 async def main() -> None:
     server_url = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8000"
-    target = f"{server_url}/v1/company/context?ticker=AAPL"
-    price_usd = 0.05
+    path = sys.argv[2] if len(sys.argv) > 2 else "/v1/company/context?ticker=AAPL"
+    target = f"{server_url}{path}"
 
     print(f"[Buyer] Wallet: {account.address}")
     print(f"[Buyer] Target: {target}")
-    print(f"[Buyer] Price:  ${price_usd} USDC\n")
 
     before = show_balance()
 

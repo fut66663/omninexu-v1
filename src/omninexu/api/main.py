@@ -50,7 +50,6 @@ app.include_router(smart_money_router, prefix="/v1", tags=["smart-money"])
 app.include_router(longitudinal_router, prefix="/v1", tags=["longitudinal"])
 
 app.middleware("http")(log_request)
-app.middleware("http")(track_analytics)
 
 # ── Static files (icon, etc.) ──
 _static_dir = _os.path.join(_os.path.dirname(__file__), "static")
@@ -61,6 +60,9 @@ _x402 = build_x402_middleware()
 if _x402 is not None:
     routes, server = _x402
     app.add_middleware(PaymentMiddlewareASGI, routes=routes, server=server)
+
+# Analytics runs AFTER x402 so it can see PAYMENT-RESPONSE headers
+app.middleware("http")(track_analytics)
 
 
 @app.exception_handler(OmniNexuError)
