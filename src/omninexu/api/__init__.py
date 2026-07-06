@@ -10,6 +10,7 @@ from omninexu.api.routes.company import router as company_router
 from omninexu.api.routes.dashboard import router as dashboard_router
 from omninexu.api.routes.health import router as health_router
 from omninexu.api.routes.stats import router as stats_router
+from omninexu.api.routes.well_known import router as well_known_router
 
 __all__ = [
     "company_router",
@@ -22,4 +23,5 @@ __all__ = [
     "longitudinal_router",
     "peer_ranking_router",
     "smart_money_router",
+    "well_known_router",
 ]

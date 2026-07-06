@@ -18,6 +18,7 @@ from omninexu.api import (
     peer_ranking_router,
     smart_money_router,
     stats_router,
+    well_known_router,
 )
 from omninexu.api.middleware.analytics import track_analytics
 from omninexu.api.middleware.logging import log_request
@@ -34,6 +35,7 @@ app = FastAPI(
 )
 
 # ── Free routes ──
+app.include_router(well_known_router, tags=["discovery"])
 app.include_router(dashboard_router, tags=["dashboard"])
 app.include_router(health_router, prefix="/v1", tags=["health"])
 app.include_router(stats_router, prefix="/v1", tags=["stats"])
