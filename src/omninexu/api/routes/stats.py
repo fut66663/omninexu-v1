@@ -1,5 +1,6 @@
 """Stats endpoint — aggregates analytics logs for the dashboard."""
 
+import contextlib
 import json
 from datetime import UTC, datetime
 from typing import Any
@@ -22,10 +23,8 @@ def _read_today() -> list[dict[str, Any]]:
     try:
         for line in log_path.read_text(encoding="utf-8").splitlines():
             if today in line:
-                try:
+                with contextlib.suppress(json.JSONDecodeError):
                     rows.append(json.loads(line))
-                except json.JSONDecodeError:
-                    pass
     except OSError:
         pass
     return rows

@@ -12,7 +12,6 @@ from fastapi import Request, Response
 
 from omninexu.config import data_paths
 
-
 # ── helpers ──────────────────────────────────────────────────
 
 def _mask_ip(ip: str) -> str:
@@ -24,13 +23,20 @@ def _mask_ip(ip: str) -> str:
 def _classify(ua: str) -> str:
     """User-Agent → short label."""
     ua = ua.lower()
-    if "claude" in ua or "anthropic" in ua:       return "claude"
-    if "gptbot" in ua or "chatgpt" in ua or "openai" in ua: return "openai"
-    if "googlebot" in ua or "gemini" in ua:        return "google"
-    if "perplexity" in ua:                         return "perplexity"
-    if "agentic" in ua or "x402" in ua:            return "x402"
-    if not ua:                                     return "empty"
-    if "bot" in ua or "crawler" in ua or "spider" in ua: return "bot"
+    if "claude" in ua or "anthropic" in ua:
+        return "claude"
+    if "gptbot" in ua or "chatgpt" in ua or "openai" in ua:
+        return "openai"
+    if "googlebot" in ua or "gemini" in ua:
+        return "google"
+    if "perplexity" in ua:
+        return "perplexity"
+    if "agentic" in ua or "x402" in ua:
+        return "x402"
+    if not ua:
+        return "empty"
+    if "bot" in ua or "crawler" in ua or "spider" in ua:
+        return "bot"
     return "other"
 
 

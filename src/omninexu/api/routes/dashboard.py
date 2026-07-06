@@ -1,13 +1,11 @@
 """Dashboard — server-rendered HTML stats page."""
 
-import json
 from datetime import UTC, datetime, timedelta
-from typing import Any
 
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
-from omninexu.api.routes.stats import _read_today, _p95
+from omninexu.api.routes.stats import _p95, _read_today
 
 router = APIRouter()
 
@@ -67,8 +65,10 @@ def _time_ago(iso: str) -> str:
     try:
         dt = datetime.fromisoformat(iso)
         delta = datetime.now(UTC).replace(tzinfo=None) - dt.replace(tzinfo=None)
-        if delta < timedelta(minutes=1): return "just now"
-        if delta < timedelta(hours=1): return f"{int(delta.total_seconds()/60)}m ago"
+        if delta < timedelta(minutes=1):
+            return "just now"
+        if delta < timedelta(hours=1):
+            return f"{int(delta.total_seconds()/60)}m ago"
         return f"{int(delta.total_seconds()/3600)}h ago"
     except Exception:
         return ""
