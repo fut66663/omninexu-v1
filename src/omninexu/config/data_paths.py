@@ -177,6 +177,11 @@ class DataPaths:
         return self.root / "operations" / "logs" / "errors"
 
     @property
+    def logs_analytics(self) -> Path:
+        """Analytics telemetry for the stats dashboard (JSONL, 90-day rotation)."""
+        return self.root / "operations" / "logs" / "analytics"
+
+    @property
     def checkpoints_dir(self) -> Path:
         """Batch import checkpoint files (JSONL)."""
         return self.root / "operations" / "checkpoints"

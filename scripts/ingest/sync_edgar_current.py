@@ -236,10 +236,14 @@ def main() -> None:
         return
 
     failed = [t for t, v in results.items() if v == -1]
+    fail_rate = len(failed) / len(results) if results else 0
     if failed:
-        logger.warning(f"Failed ({len(failed)}): {', '.join(failed[:10])}{'...' if len(failed) > 10 else ''}")
-        logger.info("Re-run with --retry-failed to retry")
-        sys.exit(1)
+        logger.warning(f"Failed ({len(failed)}/{len(results)}): {', '.join(failed[:10])}{'...' if len(failed) > 10 else ''}")
+        if fail_rate >= 0.05:
+            logger.error("Failure rate %.1f%% >= 5%%, exiting with error", fail_rate * 100)
+            sys.exit(1)
+        logger.info("Failure rate %.1f%% < 5%%, tolerating (%d failed)", fail_rate * 100, len(failed))
+    # exit 0 unless catastrophic failure rate
 
 
 if __name__ == "__main__":

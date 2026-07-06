@@ -175,7 +175,7 @@ def run_sync_edgar(
         "scripts/ingest/sync_edgar_current.py", cmd_args
     )
 
-    status = "completed" if exit_code == 0 else "failed"
+    status = "completed" if exit_code == 0 else "partial" if exit_code == 1 else "failed"
     _write_state("sync_edgar_current", status,
                  {"exit_code": exit_code, "duration_ms": round(duration_ms)})
     _log_ingestion_event("sync_edgar_current", "run", status, duration_ms,

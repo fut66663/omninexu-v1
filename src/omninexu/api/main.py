@@ -9,6 +9,7 @@ from x402.http.middleware.fastapi import PaymentMiddlewareASGI
 
 from omninexu.api import (
     company_router,
+    dashboard_router,
     filings_router,
     health_router,
     insider_router,
@@ -16,7 +17,9 @@ from omninexu.api import (
     longitudinal_router,
     peer_ranking_router,
     smart_money_router,
+    stats_router,
 )
+from omninexu.api.middleware.analytics import track_analytics
 from omninexu.api.middleware.logging import log_request
 from omninexu.api.middleware.x402 import build_x402_middleware
 from omninexu.observability.errors import OmniNexuError
@@ -31,7 +34,9 @@ app = FastAPI(
 )
 
 # ── Free routes ──
+app.include_router(dashboard_router, tags=["dashboard"])
 app.include_router(health_router, prefix="/v1", tags=["health"])
+app.include_router(stats_router, prefix="/v1", tags=["stats"])
 app.include_router(company_router, prefix="/v1", tags=["company"])
 
 # ── Paid endpoint routes ──
@@ -43,6 +48,7 @@ app.include_router(smart_money_router, prefix="/v1", tags=["smart-money"])
 app.include_router(longitudinal_router, prefix="/v1", tags=["longitudinal"])
 
 app.middleware("http")(log_request)
+app.middleware("http")(track_analytics)
 
 # ── Static files (icon, etc.) ──
 _static_dir = _os.path.join(_os.path.dirname(__file__), "static")
