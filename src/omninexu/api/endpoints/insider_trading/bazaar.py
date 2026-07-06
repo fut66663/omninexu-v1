@@ -5,9 +5,9 @@ ENDPOINT_META = {
     "url": "https://api.omninexu.com/v1/company/insider",
     "description": (
         "SEC Form 4 insider trading for any US-listed stock — "
-        "executive buy/sell transactions, cluster detection, "
-        "10b5-1 plan filtering, net shares traded, and directional "
-        "sentiment signal. Last 90 days. "
+        "executive buy/sell transactions with name, title, shares, "
+        "price and date. Returns net shares traded and transaction "
+        "count over the last 90 days. "
         "Real SEC EDGAR data, not mock."
     ),
 }

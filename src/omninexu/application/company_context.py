@@ -46,7 +46,10 @@ CONCEPT_TO_KEY = {
     "OperatingCashFlow": "operating_cash_flow",
 }
 
-LONGITUDINAL_CONCEPTS = ["Revenue", "NetIncome"]
+LONGITUDINAL_CONCEPTS = [
+    "Revenue", "NetIncome", "EPSDiluted",
+    "OperatingIncome", "OperatingCashFlow",
+]
 
 
 class CompanyContextService:
@@ -179,15 +182,15 @@ class CompanyContextService:
 
     @staticmethod
     def _build_sources(cik: str) -> list[dict[str, str]]:
-        """Build source links for the response."""
+        """Build source links for 10-K, 10-Q, and 8-K filings."""
+        base = (
+            "https://www.sec.gov/cgi-bin/browse-edgar?"
+            f"action=getcompany&CIK={cik}"
+        )
         return [
-            {
-                "type": "10-K",
-                "url": (
-                    "https://www.sec.gov/cgi-bin/browse-edgar?"
-                    f"action=getcompany&CIK={cik}&type=10-K"
-                ),
-            }
+            {"type": "10-K", "url": f"{base}&type=10-K"},
+            {"type": "10-Q", "url": f"{base}&type=10-Q"},
+            {"type": "8-K",  "url": f"{base}&type=8-K"},
         ]
 
     def _build_longitudinal(self, ticker: str) -> dict[str, float]:

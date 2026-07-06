@@ -22,7 +22,8 @@ class PeerComparison(BaseModel):
     financial-sector companies) may not be comparable across peers.
     """
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid")  # keep immutable
+    industry: str | None = None
     revenue_rank: int | None = None
     revenue_total_peers: int | None = None
     net_income_rank: int | None = None

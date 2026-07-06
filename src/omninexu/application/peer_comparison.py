@@ -65,6 +65,9 @@ def build_peer_comparison(
         comparison[f"{key}_rank"] = rank
         comparison[f"{key}_total_peers"] = len(values)
 
+    if comparison:
+        comparison["industry"] = sub_industry
+
     return comparison if comparison else None
 
 

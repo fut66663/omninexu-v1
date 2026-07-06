@@ -25,8 +25,10 @@ _OUTPUT = {
     "ticker": "AAPL", "company_name": "Apple Inc.",
     "peer_comparison": {
         "industry": "Technology Hardware, Storage & Peripherals",
-        "revenue_rank": 1, "revenue_total_peers": 8,
-        "net_income_rank": 1, "net_income_total_peers": 8,
+        "revenue_rank": 1,
+        "revenue_total_peers": 9,
+        "net_income_rank": 1,
+        "net_income_total_peers": 9,
     },
 }
 
