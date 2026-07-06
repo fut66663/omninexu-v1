@@ -2,6 +2,8 @@
 
 AI Agent Decision Context Engine for Public Companies — structured financial intelligence via HTTP API.
 
+🌐 [omninexu.com](https://www.omninexu.com) · 📊 [Dashboard](https://api.omninexu.com/dashboard) · 📖 [Docs](https://api.omninexu.com/docs)
+
 [![CI](https://github.com/fut66663/omninexu-v1/actions/workflows/ci.yml/badge.svg)](https://github.com/fut66663/omninexu-v1/actions/workflows/ci.yml)
 
 ---
@@ -30,14 +32,14 @@ Built-in **[x402](https://docs.cdp.coinbase.com/x402/welcome)** payment support 
 | Method | Path | Price | Description |
 |--------|------|:---:|-------------|
 | GET | `/v1/health` | Free | Health check (DB + Redis + DuckDB + pipelines) |
-| GET | `/v1/company/context?ticker={t}` | $0.02 | Company fundamentals + peers + institutional + insider |
-| GET | `/v1/company/pulse?ticker={t}` | $0.02 | 7 investment signals (insider, institutional, revenue, macro, sector, peer) |
-| GET | `/v1/company/filings?ticker={t}` | $0.01 | SEC filing metadata |
-| GET | `/v1/company/insider?ticker={t}` | $0.03 | Insider trading details |
-| GET | `/v1/company/institutional?ticker={t}` | $0.03 | 13F institutional holdings |
-| GET | `/v1/company/peer-ranking?ticker={t}` | $0.01 | Industry peer ranking |
-| GET | `/v1/company/longitudinal?ticker={t}` | $0.05 | Multi-year trend analysis |
-| GET | `/v1/company/smart-money?ticker={t}` | $0.05 | Institutional + insider aggregated signal |
+| GET | `/v1/company/context?ticker={t}` | $0.05 | Company fundamentals + peers + institutional + insider |
+| GET | `/v1/company/pulse?ticker={t}` | $0.02 | Investment signals (insider, institutional, revenue trend, macro) |
+| GET | `/v1/company/filings?ticker={t}` | $0.01 | SEC filing metadata (10-K, 10-Q, 8-K) |
+| GET | `/v1/company/peer-ranking?ticker={t}` | $0.02 | Industry peer ranking — revenue & net income |
+| GET | `/v1/company/insider?ticker={t}` | $0.03 | SEC Form 4 insider transactions |
+| GET | `/v1/company/institutional?ticker={t}` | $0.03 | SEC 13F institutional holdings |
+| GET | `/v1/company/longitudinal?ticker={t}` | $0.03 | Multi-year CAGR growth trends |
+| GET | `/v1/company/smart-money?ticker={t}` | $0.05 | Bundle: insider + institutional in one call |
 
 > All data endpoints use x402 per-query pricing on Base mainnet (USDC). No API keys. No signup.
 
