@@ -1,4 +1,4 @@
-"""Bazaar metadata for Insider Trading (Standard, $0.03)."""
+"""Bazaar metadata for Insider Trading ($0.002)."""
 from omninexu.api.middleware.x402.helpers import make_bazaar_extension
 
 ENDPOINT_META = {
@@ -16,7 +16,7 @@ _INPUT = {
     "type": "object",
     "properties": {
         "ticker": {"type": "string",
-            "description": "US stock ticker (AAPL, TSLA, NVDA). S&P 500 only.",
+            "description": "US stock ticker (AAPL, TSLA, NVDA). Any US-listed company.",
             "minLength": 1, "maxLength": 5},
     },
     "required": ["ticker"],

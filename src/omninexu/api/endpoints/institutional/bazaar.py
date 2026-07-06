@@ -1,4 +1,4 @@
-"""Bazaar metadata for Institutional Holdings (Standard, $0.03)."""
+"""Bazaar metadata for Institutional Holdings ($0.003)."""
 from omninexu.api.middleware.x402.helpers import make_bazaar_extension
 
 ENDPOINT_META = {
@@ -16,7 +16,7 @@ _INPUT = {
     "type": "object",
     "properties": {
         "ticker": {"type": "string",
-            "description": "US stock ticker (AAPL, BRK.B, TSLA). S&P 500 only.",
+            "description": "US stock ticker (AAPL, BRK.B, TSLA). Any US-listed company.",
             "minLength": 1, "maxLength": 5},
     },
     "required": ["ticker"],

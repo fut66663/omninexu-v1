@@ -1,6 +1,6 @@
-"""Shared helpers for Bazaar metadata and payment options.
+"""Shared helpers: payment options and Bazaar extension builder.
 
-Platform rules change? Update this file — all endpoints benefit.
+For search-term tuning (tags, service name, icon), see ``discovery_config.py``.
 """
 from typing import Any
 

@@ -16,7 +16,7 @@ class TestCompanyContextRegister:
 
     def test_service_name_set(self):
         routes = register("0xPAY", "eip155:8453", set())
-        assert routes["GET /v1/company/context"].service_name == "OmniNexu"
+        assert routes["GET /v1/company/context"].service_name == "OmniNexu Financial Data"
 
     def test_bazaar_extension_present(self):
         routes = register("0xPAY", "eip155:8453", set())

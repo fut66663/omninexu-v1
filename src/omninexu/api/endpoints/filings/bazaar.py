@@ -1,4 +1,4 @@
-"""Bazaar metadata for SEC Filings (Quick, $0.01)."""
+"""Bazaar metadata for SEC Filings ($0.002)."""
 from omninexu.api.middleware.x402.helpers import make_bazaar_extension
 
 ENDPOINT_META = {
@@ -7,7 +7,7 @@ ENDPOINT_META = {
         "SEC EDGAR filings for any US-listed company — 10-K annual "
         "reports, 10-Q quarterly reports, 8-K material events, and "
         "more. Ticker or CIK lookup with direct sec.gov source URLs "
-        "and filing dates. S&P 500 coverage. "
+        "and filing dates. All US-listed companies. "
         "Real SEC EDGAR data, not mock."
     ),
 }
@@ -16,7 +16,7 @@ _INPUT = {
     "type": "object",
     "properties": {
         "ticker": {"type": "string",
-            "description": "US stock ticker (AAPL, TSLA, MSFT). S&P 500 only.",
+            "description": "US stock ticker (AAPL, TSLA, MSFT). Any US-listed company.",
             "minLength": 1, "maxLength": 5},
     },
     "required": ["ticker"],

@@ -1,10 +1,10 @@
-"""Bazaar metadata for Longitudinal CAGR (Pro, $0.05)."""
+"""Bazaar metadata for Longitudinal CAGR ($0.003)."""
 from omninexu.api.middleware.x402.helpers import make_bazaar_extension
 
 ENDPOINT_META = {
     "url": "https://api.omninexu.com/v1/company/longitudinal",
     "description": (
-        "Multi-year CAGR growth trends for S&P 500 stocks — revenue, "
+        "Multi-year CAGR growth trends for US-listed stocks — revenue, "
         "net income, EPS, operating income, and cash flow compound "
         "annual growth rates over 3-5 years. See long-term performance "
         "trajectory, not just the latest quarter. "
@@ -16,7 +16,7 @@ _INPUT = {
     "type": "object",
     "properties": {
         "ticker": {"type": "string",
-            "description": "US stock ticker (AAPL, MSFT, GOOGL). S&P 500 only.",
+            "description": "US stock ticker (AAPL, MSFT, GOOGL). Any US-listed company.",
             "minLength": 1, "maxLength": 5},
     },
     "required": ["ticker"],

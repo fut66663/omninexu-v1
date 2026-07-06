@@ -1,11 +1,11 @@
-"""Bazaar metadata for Company Context (Quick, $0.02)."""
+"""Bazaar metadata for Company Context ($0.013)."""
 from omninexu.api.middleware.x402.helpers import make_bazaar_extension
 
 ENDPOINT_META = {
     "url": "https://api.omninexu.com/v1/company/context",
     "description": (
         "Company financial fundamentals with peer comparison and "
-        "cross-source confidence scoring for S&P 500 stocks. "
+        "cross-source confidence scoring for US-listed stocks. "
         "Revenue, net income, EPS, assets, liabilities, cash flow "
         "from SEC EDGAR 10-K/10-Q filings. Includes industry peer "
         "ranking and data-quality confidence score. "
@@ -17,7 +17,7 @@ _INPUT = {
     "type": "object",
     "properties": {
         "ticker": {"type": "string",
-            "description": "US stock ticker (AAPL, MSFT, GOOGL). S&P 500 only.",
+            "description": "US stock ticker (AAPL, MSFT, GOOGL). Any US-listed company.",
             "minLength": 1, "maxLength": 5},
         "include_peers": {"type": "boolean",
             "description": "Include peer ranking in GICS industry. Default: true."},

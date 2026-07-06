@@ -1,21 +1,46 @@
 
-"""Company Pulse endpoint — Quick tier, $0.02."""
+"""Company Pulse endpoint — $0.002."""
 from x402.http.types import RouteConfig
 
-from omninexu.api.middleware.x402.helpers import make_payment_option
+from omninexu.api.middleware.x402.discovery_config import ICON_URL, SERVICE_NAME, get_tags
+from omninexu.api.middleware.x402.helpers import make_bazaar_extension, make_payment_option
 
 __all__ = ["register"]
 
 ENDPOINT_META = {
     "url": "https://api.omninexu.com/v1/company/pulse",
     "description": (
-        "Investment signals for a ticker: insider sentiment, institutional "
-        "flow, revenue trend, and recent insider transactions. "
-        "Aggregated bullish/bearish rating."
+        "Investment signals for any US-listed stock — insider sentiment, "
+        "institutional flow, revenue trend, and recent insider transactions "
+        "aggregated into a bullish/bearish rating. "
+        "Real SEC EDGAR data, not mock."
     ),
 }
 
-ICON_URL = "https://api.omninexu.com/static/icon.png"
+_INPUT = {
+    "type": "object",
+    "properties": {
+        "ticker": {"type": "string",
+            "description": "US stock ticker (AAPL, MSFT, TSLA). Any US-listed company.",
+            "minLength": 1, "maxLength": 5},
+    },
+    "required": ["ticker"],
+}
+
+_OUTPUT = {
+    "ticker": "AAPL", "company_name": "Apple Inc.",
+    "signal": "bullish", "confidence": "medium",
+    "components": {
+        "insider_sentiment": "positive",
+        "institutional_flow": "accumulation",
+        "revenue_trend": "up",
+    },
+}
+
+_BAZAAR = make_bazaar_extension(
+    input_example={"ticker": "AAPL"},
+    input_schema=_INPUT, output_example=_OUTPUT,
+)
 
 
 def register(pay_to: str, network: str, free_routes: set[str]) -> dict | None:
@@ -24,13 +49,13 @@ def register(pay_to: str, network: str, free_routes: set[str]) -> dict | None:
         return None
     return {
         route_key: RouteConfig(
-            accepts=[make_payment_option(pay_to, network, "$0.02")],
+            accepts=[make_payment_option(pay_to, network, "$0.002")],
             resource=ENDPOINT_META["url"],
             mime_type="application/json",
             description=ENDPOINT_META["description"],
-            service_name="OmniNexu",
-            tags=["signals", "insider-trading", "institutional-holdings",
-                  "revenue-trend", "investment-research"],
+            service_name=SERVICE_NAME,
+            tags=get_tags("company_pulse"),
             icon_url=ICON_URL,
+            extensions=_BAZAAR,
         )
     }

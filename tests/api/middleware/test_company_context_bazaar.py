@@ -12,8 +12,9 @@ class TestEndpointMeta:
             "https://api.omninexu.com/v1/company/context"
         )
 
-    def test_description_mentions_sp500(self):
-        assert "S&P 500" in ENDPOINT_META["description"]
+    def test_description_mentions_us_listed(self):
+        """Description must target US-listed companies, not just S&P 500."""
+        assert "US-listed" in ENDPOINT_META["description"]
 
 
 class TestBazaarExtension:
