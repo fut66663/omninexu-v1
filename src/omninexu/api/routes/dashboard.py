@@ -22,20 +22,20 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .kpi .lbl{font-size:12px;color:#64748b;margin-top:4px}
 h2{font-size:14px;font-weight:600;margin:24px 0 10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px}
 .bar{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #1e293b}
-.bar .name{flex:0 0 160px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .name{flex:0 0 180px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar .wrap{flex:1;height:18px;background:#1e293b;border-radius:4px;overflow:hidden}
 .bar .fill{height:100%;border-radius:4px;transition:width .3s}
 .bar .num{flex:0 0 44px;text-align:right;font-size:13px;font-weight:600}
-.bad{color:#ef4444}.ok{color:#10b981}.warn{color:#f59e0b}
 .recent{font-size:12px;font-family:monospace}
-.recent .r{display:flex;gap:10px;padding:4px 0;border-bottom:1px solid #1e293b}
-.recent .t{flex:0 0 140px;color:#64748b}
-.recent .a{flex:0 0 56px;font-weight:600}
-.recent .p{flex:0 0 160px;color:#38bdf8}
+.recent .r{display:flex;gap:10px;padding:4px 0;border-bottom:1px solid #1e293b;align-items:center}
+.recent .t{flex:0 0 90px;color:#64748b}
+.recent .a{flex:0 0 50px;font-weight:600}
+.recent .p{flex:0 0 145px;color:#38bdf8}
+.recent .s{flex:0 0 55px}
+.recent .pay{flex:0 0 180px}
 .refresh{color:#38bdf8;font-size:12px;text-decoration:none}
-.status{display:flex;gap:8px;align-items:center}
-.status .dot{width:8px;height:8px;border-radius:50%}
 .updated{color:#64748b;font-size:12px;margin-top:40px;text-align:center}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}
 """
 
 AGENT_COLORS = {
@@ -43,13 +43,15 @@ AGENT_COLORS = {
     "perplexity": "#06b6d4", "x402": "#ec4899", "bot": "#6b7280",
     "empty": "#475569", "other": "#94a3b8",
 }
-STATUS_COLORS = {"200": "#10b981", "402": "#f59e0b", "4": "#ef4444", "5": "#ef4444"}
-
-
-def _status_color(s: str) -> str:
-    if s in STATUS_COLORS:
-        return STATUS_COLORS[s]
-    return STATUS_COLORS.get(s[0], "#94a3b8")
+STATUS_COLORS = {
+    "200": "#10b981", "402": "#f59e0b", "404": "#ef4444",
+    "405": "#f97316", "500": "#ef4444", "502": "#ef4444",
+}
+STATUS_LABELS = {
+    "200": "OK", "402": "Payment Required",
+    "404": "Not Found", "405": "Method Not Allowed",
+    "500": "Server Error", "502": "Bad Gateway",
+}
 
 
 def _bar_html(label: str, count: int, max_count: int, color: str) -> str:
@@ -67,8 +69,7 @@ def _time_ago(iso: str) -> str:
         delta = datetime.now(UTC).replace(tzinfo=None) - dt.replace(tzinfo=None)
         if delta < timedelta(minutes=1): return "just now"
         if delta < timedelta(hours=1): return f"{int(delta.total_seconds()/60)}m ago"
-        if delta < timedelta(days=1): return f"{int(delta.total_seconds()/3600)}h ago"
-        return f"{delta.days}d ago"
+        return f"{int(delta.total_seconds()/3600)}h ago"
     except Exception:
         return ""
 
@@ -78,12 +79,12 @@ async def dashboard(request: Request) -> str:
     rows = _read_today()
     total = len(rows)
 
-    # Aggregate
     statuses: dict[str, int] = {}
     agents: dict[str, int] = {}
     paths: dict[str, int] = {}
     times: list[float] = []
     paid = 0
+    payments: list[dict] = []
     recent: list[dict] = []
 
     for r in rows:
@@ -96,22 +97,26 @@ async def dashboard(request: Request) -> str:
         times.append(float(r.get("ms", 0)))
         if r.get("paid"):
             paid += 1
-        if len(recent) < 15:
+            payments.append(r)
+        if len(recent) < 10:
             recent.append(r)
 
     avg_ms = round(sum(times) / total, 1) if total else 0
     p95 = round(_p95(times), 1)
 
-    # Sort
     top_agents = sorted(agents.items(), key=lambda x: -x[1])[:6]
-    top_paths = sorted(paths.items(), key=lambda x: -x[1])[:8]
+    top_paths = sorted(paths.items(), key=lambda x: -x[1])[:10]
     max_agent = max((v for _, v in top_agents), default=1)
     max_path = max((v for _, v in top_paths), default=1)
 
-    # Status summary
-    ok_count = statuses.get("200", 0)
-    paywall = statuses.get("402", 0)
-    errors = sum(v for k, v in statuses.items() if k[0] in "45")
+    # Status bars — sorted by severity
+    status_order = ["200", "402", "404", "405", "500", "502"]
+    status_bars = [(s, statuses.get(s, 0)) for s in status_order if statuses.get(s, 0) > 0]
+    # Any unexpected codes
+    for s, c in statuses.items():
+        if s not in status_order:
+            status_bars.append((s, c))
+    max_status = max((c for _, c in status_bars), default=1)
 
     now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
 
@@ -129,36 +134,42 @@ async def dashboard(request: Request) -> str:
 <p class="sub">api.omninexu.com · Analytics Dashboard · <a class="refresh" href="?refresh={int(datetime.now(UTC).timestamp())}">Refresh</a></p>
 
 <div class="kpis">
-  <div class="kpi"><div class="num">{total:,}</div><div class="lbl">Today's Calls</div></div>
-  <div class="kpi"><div class="num">{paid:,}</div><div class="lbl">x402 Paid</div></div>
-  <div class="kpi"><div class="num">{avg_ms}ms</div><div class="lbl">Avg Response</div></div>
-  <div class="kpi"><div class="num">{p95}ms</div><div class="lbl">P95 Latency</div></div>
+  <div class="kpi"><div class="num">{total:,}</div><div class="lbl">Total Calls</div></div>
+  <div class="kpi"><div class="num">{paid:,}</div><div class="lbl">💰 Paid</div></div>
+  <div class="kpi"><div class="num">{total - paid:,}</div><div class="lbl">Free / Paywall</div></div>
+  <div class="kpi"><div class="num">{avg_ms}ms</div><div class="lbl">Avg / P{int(p95)}ms</div></div>
 </div>
 
 <h2>Status Codes</h2>
-<div class="status">
-  <span class="dot" style="background:#10b981"></span> <b>{ok_count}</b> OK
-  <span class="dot" style="background:#f59e0b;margin-left:12px"></span> <b>{paywall}</b> 402 (paywall)
-  <span class="dot" style="background:#ef4444;margin-left:12px"></span> <b>{errors}</b> Errors
-</div>
+{''.join(_bar_html(f'<span class="dot" style="background:{STATUS_COLORS.get(s[0],"#94a3b8")}"></span>{s} {STATUS_LABELS.get(s[0],"")}', c, max_status, STATUS_COLORS.get(s[0],"#94a3b8")) for s, c in status_bars)}
 
-<h2>Agent Distribution</h2>
+<h2>Agent Types</h2>
 {''.join(_bar_html(ag, cnt, max_agent, AGENT_COLORS.get(ag, '#94a3b8')) for ag, cnt in top_agents)}
 {'<p style="color:#64748b;font-size:13px;margin-top:8px">No agent data yet</p>' if not top_agents else ''}
 
-<h2>Endpoint Distribution</h2>
+<h2>Endpoints</h2>
 {''.join(_bar_html(p, cnt, max_path, '#38bdf8') for p, cnt in top_paths)}
-{'<p style="color:#64748b;font-size:13px;margin-top:8px">No endpoint data yet</p>' if not top_paths else ''}
+
+<h2>💰 Recent Payments</h2>
+<div class="recent">
+{''.join(f'''<div class="r">
+  <span class="t">{_time_ago(r.get('ts',''))}</span>
+  <span class="p">{r.get('path','/')}</span>
+  <span class="pay" title="{r.get('tx','')}">👤 {r.get('payer','?')}</span>
+  <span class="s" style="color:#10b981">✅ ${r.get('status','')}</span>
+</div>''' for r in list(reversed(payments))[:10])}
+{'<p style="color:#64748b;padding:12px">No payments yet</p>' if not payments else ''}
+</div>
 
 <h2>Recent Requests</h2>
 <div class="recent">
 {''.join(f'''<div class="r">
   <span class="t">{_time_ago(r.get('ts',''))}</span>
-  <span class="a">{r.get('agent','?')}</span>
+  <span class="a" style="color:{AGENT_COLORS.get(r.get('agent','other'),'#94a3b8')}">{r.get('agent','?')}</span>
   <span class="p">{r.get('path','/')}</span>
-  <span style="color:{_status_color(str(r.get('status',0)))}">{r.get('status')}</span>
+  <span class="s" style="color:{STATUS_COLORS.get(str(r.get('status','0'))[0],'#94a3b8')}">{r.get('status')}</span>
   <span>{r.get('ms')}ms</span>
-  {'💰' if r.get('paid') else ''}
+  {'💰 Paid!' if r.get('paid') else ''}
 </div>''' for r in reversed(recent))}
 {'<p style="color:#64748b;padding:12px">No recent requests</p>' if not recent else ''}
 </div>

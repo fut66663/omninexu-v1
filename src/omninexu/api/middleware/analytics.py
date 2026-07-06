@@ -2,6 +2,7 @@
 
 Writes one JSON line per request to ``operations/logs/analytics/YYYY-MM.jsonl``.
 """
+import base64
 import json
 import time
 from collections.abc import Awaitable, Callable
@@ -33,6 +34,18 @@ def _classify(ua: str) -> str:
     return "other"
 
 
+def _decode_payment(header: str) -> dict | None:
+    """Decode base64 PAYMENT-RESPONSE → {payer, tx, network}."""
+    try:
+        payload = json.loads(base64.b64decode(header + "=="))
+        return {
+            "payer": payload.get("payer", "")[:14] + "...",
+            "tx": payload.get("transaction", "")[:14] + "...",
+        }
+    except Exception:
+        return None
+
+
 # ── middleware ───────────────────────────────────────────────
 
 async def track_analytics(
@@ -59,6 +72,14 @@ async def track_analytics(
         "ip": _mask_ip(ip),
         "paid": response.headers.get("PAYMENT-RESPONSE") is not None,
     }
+
+    # Attach payment details when paid
+    pay_header = response.headers.get("PAYMENT-RESPONSE")
+    if pay_header:
+        details = _decode_payment(pay_header)
+        if details:
+            entry["payer"] = details["payer"]
+            entry["tx"] = details["tx"]
 
     log_dir = data_paths.logs_analytics
     log_dir.mkdir(parents=True, exist_ok=True)
