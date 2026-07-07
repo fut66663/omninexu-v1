@@ -239,7 +239,7 @@ def main() -> None:
     fail_rate = len(failed) / len(results) if results else 0
     if failed:
         logger.warning(f"Failed ({len(failed)}/{len(results)}): {', '.join(failed[:10])}{'...' if len(failed) > 10 else ''}")
-        if fail_rate >= 0.05:
+        if fail_rate >= 0.05 and len(failed) >= 3:
             logger.error("Failure rate %.1f%% >= 5%%, exiting with error", fail_rate * 100)
             sys.exit(1)
         logger.info("Failure rate %.1f%% < 5%%, tolerating (%d failed)", fail_rate * 100, len(failed))

@@ -75,14 +75,29 @@ def _time_ago(iso: str) -> str:
         return ""
 
 
-def _fmt_amount(raw: str | None) -> str:
-    """USDC atomic units → dollars.  20000 → "$0.02".  Falls back to "Paid"."""
-    if not raw:
-        return "Paid"
-    try:
-        return f"${float(raw) / 1_000_000:.2f}"
-    except (ValueError, TypeError):
-        return "Paid"
+# Endpoint prices (USD) — fallback when CDP doesn't return amount.
+_PRICES = {
+    "/v1/company/filings":       "0.01",
+    "/v1/company/peer-ranking":  "0.02",
+    "/v1/company/pulse":         "0.02",
+    "/v1/company/insider":       "0.03",
+    "/v1/company/institutional": "0.03",
+    "/v1/company/longitudinal":  "0.03",
+    "/v1/company/smart-money":   "0.05",
+    "/v1/company/context":       "0.05",
+}
+
+
+def _fmt_amount(raw: str | None, path: str = "") -> str:
+    """USDC atomic units → dollars.  Falls back to price table, then "Paid"."""
+    if raw:
+        try:
+            return f"${float(raw) / 1_000_000:.2f}"
+        except (ValueError, TypeError):
+            pass
+    if path in _PRICES:
+        return f"${_PRICES[path]}"
+    return "Paid"
 
 
 @router.get("/dashboard", response_class=HTMLResponse)
@@ -127,7 +142,7 @@ async def dashboard(request: Request) -> str:
     for s, c in statuses.items():
         if s not in status_order:
             status_bars.append((s, c))
-    max_status = max((c for _, c in status_bars), default=1)
+    max_status = total  # bar widths relative to total requests
 
     now = datetime.now(UTC).strftime("%Y-%m-%d %H:%M UTC")
 
@@ -167,7 +182,7 @@ async def dashboard(request: Request) -> str:
   <span class="t">{_time_ago(r.get('ts',''))}</span>
   <span class="p">{r.get('path','/')}</span>
   <span class="pay" title="{r.get('tx','')}">👤 {r.get('payer','?')}</span>
-  <span class="s" style="color:#10b981">✅ {_fmt_amount(r.get('amount'))}</span>
+  <span class="s" style="color:#10b981">✅ {_fmt_amount(r.get('amount'), r.get('path', ''))}</span>
 </div>''' for r in list(reversed(payments))[:10])}
 {'<p style="color:#64748b;padding:12px">No payments yet</p>' if not payments else ''}
 </div>

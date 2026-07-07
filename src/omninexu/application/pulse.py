@@ -52,7 +52,7 @@ def _insider_sentiment(ticker: str, repo: InsiderRepository) -> dict[str, Any]:
         return {
             "type": "insider_sentiment",
             "level": "neutral",
-            "summary": f"No insider transactions reported for {ticker} in the past 90 days.",
+            "summary": f"{ticker}: no insider trades in past 90 days",
             "score": SCORE_NEUTRAL,
             "source": "SEC Form-4",
         }
@@ -76,8 +76,8 @@ def _insider_sentiment(ticker: str, repo: InsiderRepository) -> dict[str, Any]:
         "type": "insider_sentiment",
         "level": level,
         "summary": (
-            f"过去90天内部人净{'买入' if net >= 0 else '卖出'} "
-            f"（{buys}次买入 vs {sells}次卖出）"
+            f"Net {'buying' if net >= 0 else 'selling'} "
+            f"({buys} buys vs {sells} sells in 90 days)"
         ),
         "score": score,
         "source": "SEC Form-4",
@@ -107,15 +107,15 @@ def _institutional_flow(ticker: str, repo: InstitutionalRepository) -> dict[str,
     if holder_count >= 20 and concentration > 0.5:
         level, score = "positive", SCORE_POSITIVE
         summary = (
-            f"{holder_count}家机构持仓，前10大占比{concentration:.0%}，"
-            f"机构关注度高"
+            f"{holder_count} holders, top-10 concentration {concentration:.0%}, "
+            f"strong institutional interest"
         )
     elif holder_count >= 10:
         level, score = "neutral", SCORE_NEUTRAL
-        summary = f"{holder_count}家机构持仓，前10大占比{concentration:.0%}"
+        summary = f"{holder_count} holders, top-10 concentration {concentration:.0%}"
     else:
         level, score = "neutral", SCORE_NEUTRAL
-        summary = f"{holder_count}家机构持仓，覆盖面有限"
+        summary = f"{holder_count} holders, limited coverage"
 
     return {
         "type": "institutional_flow",
@@ -197,8 +197,8 @@ def _revenue_trend(ticker: str, repo: FinancialsRepository) -> dict[str, Any]:
         "type": "revenue_trend",
         "level": level,
         "summary": (
-            f"营收YoY增长{growth:.1%}"
-            f"（${older/1e6:.0f}M → ${newer/1e6:.0f}M）"
+            f"Revenue YoY {growth:.1%}"
+            f" (${older/1e6:.0f}M → ${newer/1e6:.0f}M)"
         ),
         "score": score,
         "source": "SimFin",
@@ -217,13 +217,13 @@ def _insider_transaction_recent(
         return {
             "type": "insider_transaction_recent",
             "level": "neutral",
-            "summary": "最近30天无内部人交易记录。",
+            "summary": "No insider trades in past 30 days.",
             "score": SCORE_NEUTRAL,
             "source": "SEC Form-4",
         }
 
     latest = trades[0]
-    direction = "买入" if latest.transaction_type == "P" else "卖出"
+    direction = "Buy" if latest.transaction_type == "P" else "Sell"
     name = latest.insider_name or "内部人"
 
     if latest.transaction_type == "P":
@@ -237,8 +237,8 @@ def _insider_transaction_recent(
         "type": "insider_transaction_recent",
         "level": level,
         "summary": (
-            f"最近一笔交易: {name}（{latest.insider_title or 'N/A'}）"
-            f"{direction} {latest.shares or 0:.0f}股"
+            f"Latest trade: {name} ({latest.insider_title or 'N/A'}) "
+            f"{direction} {latest.shares or 0:.0f} shares"
             + (rf" @ \${latest.price:.2f}" if latest.price else "")
         ),
         "score": score,
@@ -278,7 +278,7 @@ def _macro_tailwind() -> dict[str, Any]:
             return {
                 "type": "macro_tailwind",
                 "level": "neutral",
-                "summary": "宏观数据暂不可用（FRED API key 未配置）。",
+                "summary": "Macro data unavailable (FRED API key not configured).",
                 "score": SCORE_NEUTRAL,
                 "source": "FRED",
             }
@@ -290,7 +290,7 @@ def _macro_tailwind() -> dict[str, Any]:
             return {
                 "type": "macro_tailwind",
                 "level": "neutral",
-                "summary": "无法获取联邦基金利率数据。",
+                "summary": "Unable to fetch Fed Funds rate.",
                 "score": SCORE_NEUTRAL,
                 "source": "FRED",
             }
@@ -299,16 +299,16 @@ def _macro_tailwind() -> dict[str, Any]:
         dgs10 = (snap.get("DGS10", {}) or {}).get("value")
 
         if fed_val >= 4.0:
-            env = "紧缩"
-            implication = "高利率环境：成长股承压，金融和能源板块受益"
+            env = "tight"
+            implication = "High rates: growth under pressure, financials & energy benefit"
         elif fed_val <= 2.0:
-            env = "宽松"
-            implication = "低利率环境：成长股和科技板块受益"
+            env = "loose"
+            implication = "Low rates: growth & tech benefit"
         else:
-            env = "中性"
-            implication = "利率适中：板块轮动取决于基本面"
+            env = "neutral"
+            implication = "Moderate rates: sector rotation driven by fundamentals"
 
-        parts = [f"联邦基金利率 {fed_val}%（{env}）"]
+        parts = [f"Fed Funds {fed_val}% ({env})"]
         if unrate is not None:
             parts.append(f"失业率 {unrate}%")
         if dgs10 is not None:
@@ -326,7 +326,7 @@ def _macro_tailwind() -> dict[str, Any]:
         return {
             "type": "macro_tailwind",
             "level": "neutral",
-            "summary": "宏观信号生成失败。",
+            "summary": "Macro signal generation failed.",
             "score": SCORE_NEUTRAL,
             "source": "FRED",
         }
@@ -359,7 +359,7 @@ def _sector_relative(
         return {
             "type": "sector_relative",
             "level": "neutral",
-            "summary": "行业分类数据不足，无法进行同行排名。",
+            "summary": "Insufficient sector data for peer ranking.",
             "score": SCORE_NEUTRAL,
             "source": "SimFin",
         }
@@ -377,7 +377,7 @@ def _sector_relative(
         return {
             "type": "sector_relative",
             "level": "neutral",
-            "summary": f"营收历史数据不足（{sector_name}行业）。",
+            "summary": f"Insufficient revenue history ({sector_name} sector).",
             "score": SCORE_NEUTRAL,
             "source": "SimFin",
         }
@@ -389,7 +389,7 @@ def _sector_relative(
         "type": "sector_relative",
         "level": "positive" if growth > 0.05 else "neutral",
         "summary": (
-            f"所属{sector_name}行业，营收YoY增长{growth:.1%}"
+            f"{sector_name} sector, revenue YoY {growth:.1%}"
         ),
         "score": SCORE_POSITIVE if growth > 0.05 else SCORE_NEUTRAL,
         "source": "SimFin",
@@ -410,7 +410,7 @@ def _peer_comparison(ticker: str) -> dict[str, Any]:
             return {
                 "type": "peer_comparison",
                 "level": "neutral",
-                "summary": "暂无同行对比数据，请先生成 context。",
+                "summary": "No peer data yet — generate context first.",
                 "score": SCORE_NEUTRAL,
                 "source": "SimFin+SEC",
             }
@@ -434,7 +434,7 @@ def _peer_comparison(ticker: str) -> dict[str, Any]:
             return {
                 "type": "peer_comparison",
                 "level": level,
-                "summary": f"营收排名 {revenue_rank}/{total_peers}（前{pct:.0%}），行业同行对比。",
+                "summary": f"Revenue rank {revenue_rank}/{total_peers} (top {pct:.0%}), industry peer comparison.",
                 "score": score,
                 "source": "SimFin+SEC",
             }
@@ -442,7 +442,7 @@ def _peer_comparison(ticker: str) -> dict[str, Any]:
         return {
             "type": "peer_comparison",
             "level": "neutral",
-            "summary": "同行对比数据尚未生成，请先运行 product_store。",
+            "summary": "Peer data not yet generated — run product_store first.",
             "score": SCORE_NEUTRAL,
             "source": "SimFin+SEC",
         }
@@ -451,7 +451,7 @@ def _peer_comparison(ticker: str) -> dict[str, Any]:
         return {
             "type": "peer_comparison",
             "level": "neutral",
-            "summary": "同行对比信号生成失败。",
+            "summary": "Peer comparison signal generation failed.",
             "score": SCORE_NEUTRAL,
             "source": "SimFin+SEC",
         }

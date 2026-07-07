@@ -51,7 +51,7 @@ def cagr(series: pd.Series, periods: int) -> float:
     start_value = window.iloc[0]
     end_value = window.iloc[-1]
 
-    if start_value == 0:
+    if start_value <= 0:
         return 0.0
 
     years = available - 1

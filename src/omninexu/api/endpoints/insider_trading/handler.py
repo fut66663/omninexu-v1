@@ -23,4 +23,4 @@ async def get_insider(
     if result is None:
         return {"ticker": ticker.upper(), "transactions": [],
                 "message": "No insider trading data found"}
-    return result.model_dump()
+    return {"ticker": ticker.upper(), **result.model_dump()}

@@ -19,9 +19,14 @@ async def get_longitudinal(
     """Multi-year CAGR growth trends for key financial metrics."""
     svc = CompanyContextService(db)
     ctx = svc.build_context(ticker.upper(), include_peers=False)
+    longitudinal = ctx.get("longitudinal", {})
+    # Format raw CAGR floats as readable percentages
+    formatted: dict[str, float] = {}
+    for k, v in longitudinal.items():
+        formatted[k] = round(v * 100, 1) if k.endswith("_cagr") else round(v, 2)
     return {
         "ticker": ticker.upper(),
         "company_name": ctx.get("name", ""),
-        "longitudinal": ctx.get("longitudinal", {}),
+        "longitudinal": formatted,
         "as_of_date": ctx.get("as_of_date"),
     }

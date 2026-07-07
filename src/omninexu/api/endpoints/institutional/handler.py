@@ -23,4 +23,4 @@ async def get_institutional(
     if result is None:
         return {"ticker": ticker.upper(), "top_holders": [],
                 "message": "No institutional holdings data found"}
-    return result.model_dump()
+    return {"ticker": ticker.upper(), **result.model_dump()}

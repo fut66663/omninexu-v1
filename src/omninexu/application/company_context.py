@@ -185,7 +185,7 @@ class CompanyContextService:
         """Build source links for 10-K, 10-Q, and 8-K filings."""
         base = (
             "https://www.sec.gov/cgi-bin/browse-edgar?"
-            f"action=getcompany&CIK={cik}"
+            f"action=getcompany&CIK={cik}&dateb=&owner=exclude&count=5"
         )
         return [
             {"type": "10-K", "url": f"{base}&type=10-K"},
