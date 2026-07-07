@@ -41,13 +41,20 @@ def _classify(ua: str) -> str:
 
 
 def _decode_payment(header: str) -> dict[str, str] | None:
-    """Decode base64 PAYMENT-RESPONSE → {payer, tx, network}."""
+    """Decode base64 PAYMENT-RESPONSE → {payer, tx, amount}.
+
+    Amount is atomic units (USDC 6 decimals on Base).
+    """
     try:
         payload = json.loads(base64.b64decode(header + "=="))
-        return {
+        result = {
             "payer": payload.get("payer", "")[:14] + "...",
             "tx": payload.get("transaction", "")[:14] + "...",
         }
+        amt = payload.get("amount")
+        if amt:
+            result["amount"] = amt
+        return result
     except Exception:
         return None
 
@@ -86,6 +93,8 @@ async def track_analytics(
         if details:
             entry["payer"] = details["payer"]
             entry["tx"] = details["tx"]
+            if details.get("amount"):
+                entry["amount"] = details["amount"]
 
     log_dir = data_paths.logs_analytics
     log_dir.mkdir(parents=True, exist_ok=True)

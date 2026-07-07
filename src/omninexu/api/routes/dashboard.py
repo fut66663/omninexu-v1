@@ -75,6 +75,16 @@ def _time_ago(iso: str) -> str:
         return ""
 
 
+def _fmt_amount(raw: str | None) -> str:
+    """USDC atomic units → dollars.  20000 → "$0.02".  Falls back to "Paid"."""
+    if not raw:
+        return "Paid"
+    try:
+        return f"${float(raw) / 1_000_000:.2f}"
+    except (ValueError, TypeError):
+        return "Paid"
+
+
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request) -> str:
     rows = _read_today()
@@ -157,7 +167,7 @@ async def dashboard(request: Request) -> str:
   <span class="t">{_time_ago(r.get('ts',''))}</span>
   <span class="p">{r.get('path','/')}</span>
   <span class="pay" title="{r.get('tx','')}">👤 {r.get('payer','?')}</span>
-  <span class="s" style="color:#10b981">✅ ${r.get('status','')}</span>
+  <span class="s" style="color:#10b981">✅ {_fmt_amount(r.get('amount'))}</span>
 </div>''' for r in list(reversed(payments))[:10])}
 {'<p style="color:#64748b;padding:12px">No payments yet</p>' if not payments else ''}
 </div>
