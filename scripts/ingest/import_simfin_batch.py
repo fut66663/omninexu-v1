@@ -28,6 +28,10 @@ logger = get_logger(__name__)
 UNIVERSE_DIR = data_paths.processed_universe
 CHECKPOINT_DIR = data_paths.checkpoints_dir
 
+# SimFin data cutoff: only import data up to FY2024.
+# From FY2025 onwards, SEC EDGAR is the authoritative source.
+SIMFIN_CUTOFF_YEAR = 2024
+
 
 def _load_universe(day: int) -> list[dict]:
     path = UNIVERSE_DIR / f"sp500_universe_day{day}.json"
@@ -73,6 +77,9 @@ def import_simfin_batch(day: int, retry_failed: bool = False) -> dict[str, int]:
 
         try:
             facts = adapter.get_financial_facts(ticker)
+            if facts:
+                # SimFin cutoff: only import FY2024 and earlier
+                facts = [f for f in facts if f.fiscal_year <= SIMFIN_CUTOFF_YEAR]
             if facts:
                 repo.save_facts(facts)
                 db.commit()

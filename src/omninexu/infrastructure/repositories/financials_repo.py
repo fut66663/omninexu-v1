@@ -55,6 +55,52 @@ class FinancialsRepository:
 
         return self.get_facts(ticker_upper, fiscal_year=latest_year)
 
+    def get_facts_by_source(
+        self,
+        ticker: str,
+        source: str = "edgar",
+        concept: str | None = None,
+        fiscal_year: int | None = None,
+        fiscal_period: str | None = None,
+    ) -> list[FinancialFact]:
+        """Get financial facts filtered by data source.
+
+        Args:
+            ticker: Stock ticker symbol.
+            source: Data source filter — \"edgar\" or \"simfin\".
+            concept: Optional concept filter (e.g. \"Revenue\").
+            fiscal_year: Optional fiscal year filter.
+            fiscal_period: Optional period filter (\"FY\", \"Q1\", \"Q2\", \"Q3\", \"Q4\").
+
+        Returns:
+            Matching facts, newest fiscal year first.
+        """
+        ticker_upper = ticker.upper()
+        logger.info(
+            f"Getting facts for {ticker_upper}, source={source}, "
+            f"concept={concept}, year={fiscal_year}, period={fiscal_period}"
+        )
+
+        stmt = (
+            select(FinancialFactModel)
+            .where(FinancialFactModel.ticker == ticker_upper)
+            .where(FinancialFactModel.source == source)
+        )
+        if concept is not None:
+            stmt = stmt.where(FinancialFactModel.concept == concept)
+        if fiscal_year is not None:
+            stmt = stmt.where(FinancialFactModel.fiscal_year == fiscal_year)
+        if fiscal_period is not None:
+            stmt = stmt.where(FinancialFactModel.fiscal_period == fiscal_period)
+
+        stmt = stmt.order_by(
+            FinancialFactModel.fiscal_year.desc(),
+            FinancialFactModel.concept,
+        )
+
+        models = self.db.execute(stmt).scalars().all()
+        return [financial_fact_model_to_domain(m) for m in models]
+
     def save_facts(self, facts: list[FinancialFact]) -> None:
         """Save financial facts, upserting on conflict."""
         if not facts:

@@ -129,16 +129,16 @@ def _institutional_flow(ticker: str, repo: InstitutionalRepository) -> dict[str,
 def _revenue_trend(ticker: str, repo: FinancialsRepository) -> dict[str, Any]:
     """Revenue year-over-year growth trajectory.
 
-    Source: SimFin
+    Source: SEC EDGAR (authoritative for 2025+)
     """
-    facts = repo.get_facts(ticker)  # all years for trend comparison
+    facts = repo.get_facts_by_source(ticker, source="edgar")
     if not facts:
         return {
             "type": "revenue_trend",
             "level": "neutral",
             "summary": f"No revenue data available for {ticker}.",
             "score": SCORE_NEUTRAL,
-            "source": "SimFin",
+            "source": "SEC EDGAR",
         }
 
     # Extract revenue values — group by fiscal_period (FY, Q1, etc.)
@@ -162,7 +162,7 @@ def _revenue_trend(ticker: str, repo: FinancialsRepository) -> dict[str, Any]:
             "level": "neutral",
             "summary": f"No revenue data available for {ticker}.",
             "score": SCORE_NEUTRAL,
-            "source": "SimFin",
+            "source": "SEC EDGAR",
         }
 
     revenues = sorted(revenue_by_period[best_period], key=lambda x: x[0])
@@ -173,14 +173,26 @@ def _revenue_trend(ticker: str, repo: FinancialsRepository) -> dict[str, Any]:
             "level": "neutral",
             "summary": f"Insufficient revenue history for {ticker}.",
             "score": SCORE_NEUTRAL,
-            "source": "SimFin",
+            "source": "SEC EDGAR",
         }
 
-    # Sort by period, compare latest two
-    revenues.sort(key=lambda x: x[0])
+    # Compare latest two periods (already sorted by period_key)
     _, older = revenues[-2]
     _, newer = revenues[-1]
     growth = (newer - older) / older if older > 0 else 0
+
+    # Guard: anomalous growth (>50%) → flag as data issue, not signal
+    if abs(growth) > 0.50:
+        return {
+            "type": "revenue_trend",
+            "level": "neutral",
+            "summary": (
+                f"Revenue data anomaly detected (YoY {growth:.1%}); "
+                f"cross-source verification recommended."
+            ),
+            "score": SCORE_NEUTRAL,
+            "source": "SEC EDGAR",
+        }
 
     if growth > 0.15:
         level, score = "positive", SCORE_STRONG_POSITIVE
@@ -198,10 +210,10 @@ def _revenue_trend(ticker: str, repo: FinancialsRepository) -> dict[str, Any]:
         "level": level,
         "summary": (
             f"Revenue YoY {growth:.1%}"
-            f" (${older/1e6:.0f}M → ${newer/1e6:.0f}M)"
+            f" (${older/1e9:.1f}B → ${newer/1e9:.1f}B)"
         ),
         "score": score,
-        "source": "SimFin",
+        "source": "SEC EDGAR",
     }
 
 
@@ -339,7 +351,7 @@ def _sector_relative(
 
     Compares revenue growth against peers in the same GICS sector.
 
-    Source: SimFin (via DB)
+    Source: SEC EDGAR (via DB)
     """
     sic_code = getattr(company, "sic_code", None)
     sector_name = None
@@ -359,13 +371,13 @@ def _sector_relative(
         return {
             "type": "sector_relative",
             "level": "neutral",
-            "summary": "Insufficient sector data for peer ranking.",
+            "summary": "Insufficient sector classification data for peer ranking.",
             "score": SCORE_NEUTRAL,
-            "source": "SimFin",
+            "source": "SEC EDGAR",
         }
 
-    # Get revenue growth for this ticker
-    facts = repo.get_facts(ticker)
+    # Get revenue growth for this ticker (EDGAR only)
+    facts = repo.get_facts_by_source(ticker, source="edgar")
     revenues = []
     for f in facts:
         if "revenue" in (f.concept or "").lower() and "cost" not in (f.concept or "").lower():
@@ -377,9 +389,9 @@ def _sector_relative(
         return {
             "type": "sector_relative",
             "level": "neutral",
-            "summary": f"Insufficient revenue history ({sector_name} sector).",
+            "summary": f"Insufficient revenue history for {sector_name} sector comparison.",
             "score": SCORE_NEUTRAL,
-            "source": "SimFin",
+            "source": "SEC EDGAR",
         }
 
     revenues.sort()
@@ -392,7 +404,7 @@ def _sector_relative(
             f"{sector_name} sector, revenue YoY {growth:.1%}"
         ),
         "score": SCORE_POSITIVE if growth > 0.05 else SCORE_NEUTRAL,
-        "source": "SimFin",
+        "source": "SEC EDGAR",
     }
 
 

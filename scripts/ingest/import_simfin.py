@@ -19,6 +19,10 @@ DEFAULT_TICKERS = [
     "XOM", "JPM", "CAT", "PFE", "GOOGL",
 ]
 
+# SimFin data cutoff: only import data up to FY2024.
+# From FY2025 onwards, SEC EDGAR is the authoritative source.
+SIMFIN_CUTOFF_YEAR = 2024
+
 
 def import_simfin(tickers: list[str] | None = None) -> dict[str, int]:
     """Import FY2020+ financial facts from SimFin for each ticker."""
@@ -32,6 +36,9 @@ def import_simfin(tickers: list[str] | None = None) -> dict[str, int]:
         logger.info(f"SimFin import: {t}")
         try:
             facts = adapter.get_financial_facts(t)
+            if facts:
+                # SimFin cutoff: only import FY2024 and earlier
+                facts = [f for f in facts if f.fiscal_year <= SIMFIN_CUTOFF_YEAR]
             if facts:
                 repo.save_facts(facts)
                 db.commit()
