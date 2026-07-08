@@ -193,7 +193,8 @@ async def main() -> None:
         ms = r.get("ms", 0)
         fields = ", ".join(r.get("fields", []))
         spent = r.get("spent", 0)
-        print(f"  {icon} {r['endpoint']:40s} {ms:5}ms  ${spent:.4f}")
+        extra = f" [{fields}]" if fields else ""
+        print(f"  {icon} {r['endpoint']:40s} {ms:5}ms  ${spent:.4f}{extra}")
         if r["status"] == "failed":
             print(f"     -> {r.get('error', '')}")
 
