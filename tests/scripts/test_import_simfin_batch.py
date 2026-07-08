@@ -34,11 +34,11 @@ class TestImportSimfinBatch:
             mock_adapter.get_financial_facts.return_value = [
                 FinancialFact(
                     ticker="AAPL",
-                    fiscal_year=2025,
+                    fiscal_year=2024,
                     fiscal_period="FY",
-                    report_date=date(2025, 9, 27),
+                    report_date=date(2024, 9, 28),
                     concept="Revenue",
-                    value=416_161_000_000.0,
+                    value=391_035_000_000.0,
                     unit="USD",
                 ),
             ]
