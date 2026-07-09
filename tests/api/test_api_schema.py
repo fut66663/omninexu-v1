@@ -4,6 +4,7 @@ from datetime import date
 
 from omninexu.api.schemas.company import (
     CompanyContextResponse,
+    DataQuality,
     FundamentalMetric,
     InsiderSummary,
     InsiderTransaction,
@@ -68,7 +69,14 @@ def test_company_context_response_accepts_new_fields():
         institutional=InstitutionalSummary(top_holders=[], as_of_date=None),
         insider=InsiderSummary(recent_transactions=[], net_shares_90d=0.0,
                                transaction_count_90d=0),
-        sources=[], confidence="high",
+        sources=[],
+        data_quality=DataQuality(
+            institutional_coverage="missing",
+            fiscal_period_labeled=False,
+            cagr_reliability="low",
+            data_freshness_days=0,
+        ),
+        confidence="high",
     )
     assert resp.institutional is not None
     assert resp.insider is not None
@@ -79,9 +87,15 @@ def test_company_context_response_accepts_none():
     resp = CompanyContextResponse(
         ticker="AAPL", cik="0000320193", name="Apple Inc.",
         as_of_date=None,
-        fundamentals={"revenue": FundamentalMetric(value=100.0, unit="USD", fiscal_year=2025, source="edgar")},
+        fundamentals={"revenue": FundamentalMetric(value=100.0, unit="USD", fiscal_year=2025, fiscal_period="FY", source="edgar")},
         longitudinal={}, peer_comparison=None,
         sources=[Source(type="10-K", url="https://sec.gov/...")],
+        data_quality=DataQuality(
+            institutional_coverage="missing",
+            fiscal_period_labeled=True,
+            cagr_reliability="low",
+            data_freshness_days=0,
+        ),
         confidence="low",
     )
     assert resp.institutional is None

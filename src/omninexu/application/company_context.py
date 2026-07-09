@@ -29,7 +29,7 @@ from omninexu.observability import (
 logger = get_logger(__name__)
 
 CACHE_TTL_SECONDS = 24 * 3600
-CACHE_VERSION = "v4"  # bump: +10-Q/8-K sources, +3 longitudinal concepts, +peer industry
+CACHE_VERSION = "v5"  # +fiscal_period, +data_quality, +pulse confidence
 # Maximum fiscal years to use for longitudinal calculations.
 # SimFin provides FY2020+ (6-7 years); EDGAR supplements as available.
 MAX_LONGITUDINAL_PERIODS = 10
@@ -105,6 +105,7 @@ class CompanyContextService:
 
         institutional = self._build_institutional(ticker)
         insider = self._build_insider(ticker)
+        data_quality = self._build_data_quality(ticker, latest_facts)
 
         return {
             "ticker": company.ticker,
@@ -121,6 +122,7 @@ class CompanyContextService:
                 insider.model_dump() if insider is not None else None
             ),
             "sources": self._build_sources(company.cik),
+            "data_quality": data_quality,
             "confidence": self._compute_confidence(
                 fundamentals=fundamentals,
                 longitudinal=longitudinal,
@@ -169,6 +171,7 @@ class CompanyContextService:
                 "value": fact.value,
                 "unit": fact.unit,
                 "fiscal_year": fact.fiscal_year,
+                "fiscal_period": fact.fiscal_period,
                 "source": fact.source,
             }
         return fundamentals
@@ -255,6 +258,53 @@ class CompanyContextService:
         if filled >= 3:
             return "medium"
         return "low"
+
+    def _build_data_quality(
+        self,
+        ticker: str,
+        facts: list[FinancialFact],
+    ) -> dict[str, Any]:
+        """Build data-quality metrics for the context response.
+
+        Returns a dict with keys matching the ``DataQuality`` Pydantic model.
+        """
+        # 1. institutional_coverage — count total 13F holders
+        inst_repo = InstitutionalRepository(self.db)
+        holdings = inst_repo.get_holdings(ticker)
+        holder_count = len(holdings)
+        if holder_count >= 20:
+            institutional_coverage = "full"
+        elif holder_count >= 1:
+            institutional_coverage = "partial"
+        else:
+            institutional_coverage = "missing"
+
+        # 2. fiscal_period_labeled — every fact has a non-empty period
+        fiscal_period_labeled = all(
+            fact.fiscal_period and fact.fiscal_period.strip() != ""
+            for fact in facts
+        ) if facts else False
+
+        # 3. cagr_reliability — based on distinct fiscal years
+        all_facts = self.financials_repo.get_facts(ticker)
+        distinct_years = len({f.fiscal_year for f in all_facts})
+        if distinct_years >= 5:
+            cagr_reliability = "high"
+        elif distinct_years >= 3:
+            cagr_reliability = "medium"
+        else:
+            cagr_reliability = "low"
+
+        # 4. data_freshness_days — days since latest report_date
+        latest = self._latest_report_date(facts)
+        data_freshness_days = (date.today() - latest).days if latest else 0
+
+        return {
+            "institutional_coverage": institutional_coverage,
+            "fiscal_period_labeled": fiscal_period_labeled,
+            "cagr_reliability": cagr_reliability,
+            "data_freshness_days": data_freshness_days,
+        }
 
     def _build_institutional(self, ticker: str) -> Any:
         """Build institutional holdings summary from DB (13F data)."""

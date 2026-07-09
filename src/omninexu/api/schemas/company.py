@@ -12,6 +12,7 @@ class FundamentalMetric(BaseModel):
     value: float
     unit: str
     fiscal_year: int
+    fiscal_period: str  # "FY" | "Q1" | "Q2" | "Q3" | "Q4"
     source: str  # "simfin" | "edgar"
 
 
@@ -79,6 +80,17 @@ class InsiderSummary(BaseModel):
     source: str = "SEC Form-4"
 
 
+class DataQuality(BaseModel):
+    """Data quality and coverage metadata for the context response."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    institutional_coverage: str  # "full" | "partial" | "missing"
+    fiscal_period_labeled: bool
+    cagr_reliability: str  # "high" | "medium" | "low"
+    data_freshness_days: int
+
+
 class CompanyContextResponse(BaseModel):
     """Full company context response returned by /v1/company/context."""
 
@@ -94,4 +106,5 @@ class CompanyContextResponse(BaseModel):
     institutional: InstitutionalSummary | None = None
     insider: InsiderSummary | None = None
     sources: list[Source]
+    data_quality: DataQuality
     confidence: str

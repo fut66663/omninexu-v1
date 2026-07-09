@@ -55,6 +55,7 @@ def _insider_sentiment(ticker: str, repo: InsiderRepository) -> dict[str, Any]:
             "summary": f"{ticker}: no insider trades in past 90 days",
             "score": SCORE_NEUTRAL,
             "source": "SEC Form-4",
+            "confidence": "low",
         }
 
     buys = sum(1 for t in trades if t.transaction_type == "P")
@@ -81,6 +82,7 @@ def _insider_sentiment(ticker: str, repo: InsiderRepository) -> dict[str, Any]:
         ),
         "score": score,
         "source": "SEC Form-4",
+        "confidence": "high",
     }
 
 
@@ -97,6 +99,7 @@ def _institutional_flow(ticker: str, repo: InstitutionalRepository) -> dict[str,
             "summary": f"No institutional holdings data for {ticker}.",
             "score": SCORE_NEUTRAL,
             "source": "SEC 13F",
+            "confidence": "low",
         }
 
     total_value = sum(h.value or 0 for h in holdings)
@@ -106,15 +109,18 @@ def _institutional_flow(ticker: str, repo: InstitutionalRepository) -> dict[str,
 
     if holder_count >= 20 and concentration > 0.5:
         level, score = "positive", SCORE_POSITIVE
+        inst_confidence = "high"
         summary = (
             f"{holder_count} holders, top-10 concentration {concentration:.0%}, "
             f"strong institutional interest"
         )
     elif holder_count >= 10:
         level, score = "neutral", SCORE_NEUTRAL
+        inst_confidence = "medium"
         summary = f"{holder_count} holders, top-10 concentration {concentration:.0%}"
     else:
         level, score = "neutral", SCORE_NEUTRAL
+        inst_confidence = "medium"
         summary = f"{holder_count} holders, limited coverage"
 
     return {
@@ -123,6 +129,7 @@ def _institutional_flow(ticker: str, repo: InstitutionalRepository) -> dict[str,
         "summary": summary,
         "score": score,
         "source": "SEC 13F",
+        "confidence": inst_confidence,
     }
 
 
@@ -139,6 +146,7 @@ def _revenue_trend(ticker: str, repo: FinancialsRepository) -> dict[str, Any]:
             "summary": f"No revenue data available for {ticker}.",
             "score": SCORE_NEUTRAL,
             "source": "SEC EDGAR",
+            "confidence": "low",
         }
 
     # Extract revenue values — group by fiscal_period (FY, Q1, etc.)
@@ -163,6 +171,7 @@ def _revenue_trend(ticker: str, repo: FinancialsRepository) -> dict[str, Any]:
             "summary": f"No revenue data available for {ticker}.",
             "score": SCORE_NEUTRAL,
             "source": "SEC EDGAR",
+            "confidence": "low",
         }
 
     revenues = sorted(revenue_by_period[best_period], key=lambda x: x[0])
@@ -174,6 +183,7 @@ def _revenue_trend(ticker: str, repo: FinancialsRepository) -> dict[str, Any]:
             "summary": f"Insufficient revenue history for {ticker}.",
             "score": SCORE_NEUTRAL,
             "source": "SEC EDGAR",
+            "confidence": "low",
         }
 
     # Compare latest two periods (already sorted by period_key)
@@ -192,6 +202,7 @@ def _revenue_trend(ticker: str, repo: FinancialsRepository) -> dict[str, Any]:
             ),
             "score": SCORE_NEUTRAL,
             "source": "SEC EDGAR",
+            "confidence": "medium",
         }
 
     if growth > 0.15:
@@ -214,6 +225,7 @@ def _revenue_trend(ticker: str, repo: FinancialsRepository) -> dict[str, Any]:
         ),
         "score": score,
         "source": "SEC EDGAR",
+        "confidence": "high",
     }
 
 
@@ -232,11 +244,12 @@ def _insider_transaction_recent(
             "summary": "No insider trades in past 30 days.",
             "score": SCORE_NEUTRAL,
             "source": "SEC Form-4",
+            "confidence": "low",
         }
 
     latest = trades[0]
     direction = "Buy" if latest.transaction_type == "P" else "Sell"
-    name = latest.insider_name or "内部人"
+    name = latest.insider_name or "Insider"
 
     if latest.transaction_type == "P":
         level, score = "positive", SCORE_POSITIVE
@@ -255,6 +268,7 @@ def _insider_transaction_recent(
         ),
         "score": score,
         "source": "SEC Form-4",
+        "confidence": "high",
     }
 
 
@@ -293,6 +307,7 @@ def _macro_tailwind() -> dict[str, Any]:
                 "summary": "Macro data unavailable (FRED API key not configured).",
                 "score": SCORE_NEUTRAL,
                 "source": "FRED",
+                "confidence": "low",
             }
 
         snap = client.get_core_snapshot()
@@ -305,6 +320,7 @@ def _macro_tailwind() -> dict[str, Any]:
                 "summary": "Unable to fetch Fed Funds rate.",
                 "score": SCORE_NEUTRAL,
                 "source": "FRED",
+                "confidence": "low",
             }
 
         unrate = (snap.get("UNRATE", {}) or {}).get("value")
@@ -322,16 +338,17 @@ def _macro_tailwind() -> dict[str, Any]:
 
         parts = [f"Fed Funds {fed_val}% ({env})"]
         if unrate is not None:
-            parts.append(f"失业率 {unrate}%")
+            parts.append(f"Unemployment {unrate}%")
         if dgs10 is not None:
-            parts.append(f"10Y国债 {dgs10}%")
+            parts.append(f"10Y Treasury {dgs10}%")
 
         return {
             "type": "macro_tailwind",
-            "level": "positive" if env == "宽松" else ("negative" if env == "紧缩" else "neutral"),
-            "summary": "；".join(parts) + f"。{implication}",
-            "score": SCORE_POSITIVE if env == "宽松" else (SCORE_NEGATIVE if env == "紧缩" else SCORE_NEUTRAL),
+            "level": "positive" if env == "loose" else ("negative" if env == "tight" else "neutral"),
+            "summary": "; ".join(parts) + f". {implication}",
+            "score": SCORE_POSITIVE if env == "loose" else (SCORE_NEGATIVE if env == "tight" else SCORE_NEUTRAL),
             "source": "FRED",
+            "confidence": "high",
         }
     except Exception as exc:
         logger.warning(f"macro_tailwind failed: {exc}")
@@ -341,6 +358,7 @@ def _macro_tailwind() -> dict[str, Any]:
             "summary": "Macro signal generation failed.",
             "score": SCORE_NEUTRAL,
             "source": "FRED",
+            "confidence": "low",
         }
 
 
@@ -374,6 +392,7 @@ def _sector_relative(
             "summary": "Insufficient sector classification data for peer ranking.",
             "score": SCORE_NEUTRAL,
             "source": "SEC EDGAR",
+            "confidence": "low",
         }
 
     # Get revenue growth for this ticker (EDGAR only)
@@ -392,6 +411,7 @@ def _sector_relative(
             "summary": f"Insufficient revenue history for {sector_name} sector comparison.",
             "score": SCORE_NEUTRAL,
             "source": "SEC EDGAR",
+            "confidence": "low",
         }
 
     revenues.sort()
@@ -405,6 +425,7 @@ def _sector_relative(
         ),
         "score": SCORE_POSITIVE if growth > 0.05 else SCORE_NEUTRAL,
         "source": "SEC EDGAR",
+        "confidence": "medium",
     }
 
 
@@ -425,6 +446,7 @@ def _peer_comparison(ticker: str) -> dict[str, Any]:
                 "summary": "No peer data yet — generate context first.",
                 "score": SCORE_NEUTRAL,
                 "source": "SimFin+SEC",
+                "confidence": "low",
             }
 
         import json
@@ -449,6 +471,7 @@ def _peer_comparison(ticker: str) -> dict[str, Any]:
                 "summary": f"Revenue rank {revenue_rank}/{total_peers} (top {pct:.0%}), industry peer comparison.",
                 "score": score,
                 "source": "SimFin+SEC",
+                "confidence": "high",
             }
 
         return {
@@ -457,6 +480,7 @@ def _peer_comparison(ticker: str) -> dict[str, Any]:
             "summary": "Peer data not yet generated — run product_store first.",
             "score": SCORE_NEUTRAL,
             "source": "SimFin+SEC",
+            "confidence": "medium",
         }
     except Exception as exc:
         logger.warning(f"peer_comparison failed for {ticker}: {exc}")
@@ -466,6 +490,7 @@ def _peer_comparison(ticker: str) -> dict[str, Any]:
             "summary": "Peer comparison signal generation failed.",
             "score": SCORE_NEUTRAL,
             "source": "SimFin+SEC",
+            "confidence": "low",
         }
 
 

@@ -60,6 +60,13 @@ def test_integration_company_context_aapl(client: TestClient, db_session):
     assert data["fundamentals"]["revenue"]["value"] == 416_161_000_000.0
     assert data["fundamentals"]["revenue"]["unit"] == "USD"
     assert data["fundamentals"]["revenue"]["fiscal_year"] == 2025
+    assert data["fundamentals"]["revenue"]["fiscal_period"] == "FY"
+    assert "data_quality" in data
+    assert data["data_quality"]["fiscal_period_labeled"] is True
+    assert data["data_quality"]["institutional_coverage"] in ("full", "partial", "missing")
+    assert data["data_quality"]["cagr_reliability"] in ("high", "medium", "low")
+    assert isinstance(data["data_quality"]["data_freshness_days"], int)
+    assert data["confidence"] in ("high", "medium", "low")
 
 
 def test_integration_company_context_invalid_ticker(client: TestClient):
