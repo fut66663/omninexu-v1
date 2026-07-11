@@ -12,7 +12,7 @@ AI Agent Decision Context Engine for Public Companies — structured financial i
 
 OmniNexu is a **FastAPI backend** that collects S&P 500 public company financial data from SEC EDGAR and SimFin, processes it into structured JSON, and serves it to AI agents via HTTP API.
 
-Built-in **[x402](https://docs.cdp.coinbase.com/x402/welcome)** payment support — agents pay per query in USDC on Base. No API keys. No signup.
+Built-in **[x402](https://docs.x402.org)** payment support — agents pay per query in USDC on Base. No API keys. No signup.
 
 ## Data Coverage
 
