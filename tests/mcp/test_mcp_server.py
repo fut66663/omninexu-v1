@@ -73,6 +73,10 @@ def test_create_mcp_server_with_both_enabled(monkeypatch) -> None:
     """MCP_ENABLED + X402_ENABLED → returns FastMCP instance."""
     monkeypatch.setattr(settings, "x402_enabled", True)
     monkeypatch.setattr(settings, "mcp_enabled", True)
+    monkeypatch.setattr(
+        settings, "x402_pay_to", "0x0000000000000000000000000000000000000000"
+    )
+    monkeypatch.setattr(settings, "x402_network", "eip155:84532")
 
     srv = create_mcp_server()
     assert srv is not None, "expected FastMCP instance when both flags are true"
