@@ -17,6 +17,7 @@ dependencies = [
     "python-json-logger>=2.0.7",
     "simfin>=1.0.2",
     "x402[evm,extensions,fastapi]>=2.15.0",
+    "mcp>=1.0.0",
     "cryptography>=49.0.0",
     "duckdb>=1.5.4",
 ]

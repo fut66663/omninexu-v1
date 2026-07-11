@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     cdp_api_key_id: str | None = Field(default=None, alias="CDP_API_KEY_ID")
     cdp_api_key_secret: str | None = Field(default=None, alias="CDP_API_KEY_SECRET")
 
+    # ── MCP Server (opt-in) ──
+    mcp_enabled: bool = Field(default=False, alias="MCP_ENABLED")
+    mcp_port: int = Field(default=4022, alias="MCP_PORT")
+
     # Data — override via OMNINEXU_DATA_ROOT env var for non-Windows or custom paths
     omninexu_data_root: str = Field(
         default="./OmniNexuData", alias="OMNINEXU_DATA_ROOT"

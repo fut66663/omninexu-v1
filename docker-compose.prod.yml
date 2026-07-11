@@ -75,6 +75,30 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # ── MCP Server (SSE transport for AI agents) ──
+  mcp:
+    build: .
+    container_name: omninexu-mcp
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4022:4022"          # only localhost, nginx proxies
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - omninexu-net
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    command:
+      python -m omninexu.mcp
+
 networks:
   omninexu-net:
     driver: bridge
